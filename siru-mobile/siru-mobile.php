@@ -16,6 +16,25 @@ if (!defined('ABSPATH')) {
 
 require_once ABSPATH . '/wp-content/plugins/siru-mobile/index.php';
 
+
+/**
+ * Create Settings Link
+ */
+
+function add_settings_link($links, $file) {
+    static $this_plugin;
+    if (!$this_plugin) $this_plugin = plugin_basename(__FILE__);
+
+    if ($file == $this_plugin){
+        $settings_link = '<a href="admin.php?page=siru-mobile-settings">'.__("Settings", "siru-mobile").'</a>';
+        array_unshift($links, $settings_link);
+    }
+    return $links;
+}
+
+add_filter('plugin_action_links', 'add_settings_link', 10, 2 );
+
+
 /**
  * Create Settings Menu
  */
@@ -43,22 +62,22 @@ function createOTUMenuPage() { ?>
             <?php do_settings_sections( 'siru-mobile-settings-group' ); ?>
             <table class="form-table"  style="padding: 5px">
                 <tr>
-                    <th scope="row">API endpoint*</th>
-                    <td><input type="text" required  name="siru_mobile_api_endpoint" class="regular-text" value="<?php echo esc_attr( get_option( 'siru_mobile_api_endpoint' ) ); ?>"/></td>
+                    <th scope="row"><?php _e( 'Use live environment', 'siru-mobile' ) ?></th>
+                    <td><input type="checkbox" name="siru_mobile_api_endpoint" value="1" <?php checked( get_option( 'siru_mobile_api_endpoint' ), 1 ); ?> /></td>
                 </tr>
 
                 <tr>
-                    <th scope="row">MerchantId*</th>
+                    <th scope="row"><?php _e( 'MerchantId*', 'siru-mobile' ) ?></th>
                     <td><input type="text" required name="siru_mobile_merchant_id" class="regular-text" value="<?php echo esc_attr( get_option( 'siru_mobile_merchant_id' ) ); ?>"/></td>
                 </tr>
 
                 <tr>
-                    <th scope="row">Merchant secret*</th>
+                    <th scope="row"><?php _e( 'Merchant secret*', 'siru-mobile' ) ?></th>
                     <td><input type="text" required name="siru_mobile_merchant_secret" class="regular-text" value="<?php echo esc_attr( get_option( 'siru_mobile_merchant_secret') ); ?>"/></td>
                 </tr>
 
                 <tr>
-                    <th scope="row">Purchase country*</th>
+                    <th scope="row"><?php _e( 'Purchase country*', 'siru-mobile' ) ?></th>
                     <td>
                         <select name="siru_mobile_purchase_country"  <?php echo esc_attr( get_option( 'siru_mobile_purchase_country') ); ?>>
                             <?php $countries = ['FI','UK']; foreach ($countries as $value): ?>
@@ -69,11 +88,11 @@ function createOTUMenuPage() { ?>
                 </tr>
 
                 <tr>
-                    <th scope="row">Submerchant reference</th>
+                    <th scope="row"><?php _e( 'Submerchant reference', 'siru-mobile' ) ?></th>
                     <td><input type="text" name="siru_mobile_submerchant_references" class="regular-text" value="<?php echo esc_attr( get_option( 'siru_mobile_submerchant_references') ); ?>"/></td>
                 </tr>
                 <tr>
-                    <th scope="row">Tax class</th>
+                    <th scope="row"><?php _e( 'Tax class', 'sirumobile-tax-class' ) ?></th>
                     <td>
                         <select name="siru_mobile_tax_class" required>
                             <?php $tax = 0; while ($tax < 4): ?>
@@ -84,7 +103,7 @@ function createOTUMenuPage() { ?>
                 </tr>
 
                 <tr>
-                    <th scope="row">Service group</th>
+                    <th scope="row"><?php _e( 'Service group', 'siru-mobile' ) ?></th>
                     <td>
                         <select name="siru_mobile_service_group" required>
                             <?php $service = 0; while ($service < 4): ?>
@@ -96,7 +115,7 @@ function createOTUMenuPage() { ?>
 
 
                 <tr>
-                    <th scope="row">Instant payment</th>
+                    <th scope="row"><?php _e( 'Instant payment', 'siru-mobile' ) ?></th>
 
                     <td>
                         <select name="siru_mobile_instant_pay" >
@@ -108,12 +127,12 @@ function createOTUMenuPage() { ?>
 
                 </tr>
                 <tr>
-                    <th scope="row">Maximum payment allowed*</th>
+                    <th scope="row"><?php _e( 'Maximum payment allowed*', 'siru-mobile' ) ?></th>
                     <td><input type="number" required name="siru_mobile_maximum_payment_allowed" class="regular-text" value="<?= (get_option( 'siru_mobile_maximum_payment_allowed' ) == '')? 60: esc_attr( get_option( 'siru_mobile_maximum_payment_allowed' ) ); ?>"/></td>
                 </tr>
 
                 <tr>
-                    <th scope="row">Mobile payment fee</th>
+                    <th scope="row"><?php _e( 'Mobile payment fee', 'siru-mobile' ) ?></th>
                     <td><input type="number" name="siru_mobile_mobile_payment_fee" class="regular-text" value="<?= (get_option( 'siru_mobile_mobile_payment_fee' ) == '')? 0:  esc_attr( get_option( 'siru_mobile_mobile_payment_fee' ) ); ?>"/></td>
                 </tr>
 
