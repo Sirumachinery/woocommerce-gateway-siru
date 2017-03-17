@@ -247,5 +247,25 @@ function my_plugin_admin_notices() {
     }
 }
 
+/**
+ * Removes siru payment gateway option if maximum payment allowed is set and cart total exceeds it.
+ * @param  array $gateways
+ * @return array
+ */
+function wc_siru_disable_on_order_total($gateways) {
+    global $woocommerce;
 
+    if( isset($gateways['siru']) == true ) {
+        $limit= number_format(esc_attr( get_option( 'siru_mobile_maximum_payment_allowed' ) ), 2);
+        $total = number_format($woocommerce->cart->total, 2);
+
+        if(bccomp($limit, 0, 2) == 1 && bccomp($limit, $total, 2) == -1) {
+            unset($gateways['siru']);
+        }
+    }
+
+    return $gateways;
+}
+ 
+add_filter( 'woocommerce_available_payment_gateways', 'wc_siru_disable_on_order_total' );
 
