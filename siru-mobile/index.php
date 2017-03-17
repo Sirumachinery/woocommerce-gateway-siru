@@ -90,7 +90,7 @@ function wc_offline_gateway_init()
         {
             $order = wc_get_order($order_id);
 
-            $token_active = $_SESSION['token_checkout'] ;
+            $token_active = isset($_SESSION['token_checkout']) ? $_SESSION['token_checkout'] : null;
 
             $merchantId = esc_attr( get_option( 'siru_mobile_merchant_id' ) );
             $secret = esc_attr( get_option( 'siru_mobile_merchant_secret' ) );
@@ -134,7 +134,6 @@ function wc_offline_gateway_init()
 
                 $purchaseCountry= esc_attr( get_option( 'siru_mobile_purchase_country' ) );
 
-
                 // success
 //                ?siru_uuid=632ffd0c-9b73-4484-8141-c3a5b61364f3&siru_merchantId=75&siru_submerchantReference=&siru_purchaseReference=&siru_event=success&siru_signature=9dad00684a74f53bb17dac4cd0b9ecbfa65a29f9cadcafdd2711e6e4aab2455023760057a3a8a0a6b8e488e65aec7bd83a47221d9ab9743526ec504da9ce5170
 
@@ -173,7 +172,7 @@ function wc_offline_gateway_init()
                         ->set('customerLocale', get_locale())
                         ->createPayment();
 
-                   $_SESSION['token_checkout'] = true;
+                    $_SESSION['token_checkout'] = true;
 
                     return array(
                         'result' => 'success',
@@ -181,15 +180,13 @@ function wc_offline_gateway_init()
                     );
 
                 } catch (\Siru\Exception\InvalidResponseException $e) {
-                    echo "Unable to contact Payment API.";
+                    error_log('Siru Payment Gateway: Unable to contact payment API. Check credentials.');
 
                 } catch (\Siru\Exception\ApiException $e) {
-                    echo "API reported following errors:<br />";
-                    foreach ($e->getErrorStack() as $error) {
-                        echo $error . "<br />";
-                    }
+                    error_log('Siru Payment Gateway: Failed to create transaction. ' . implode(" ", $e->getErrorStack()));
                 }
 
+                return;
             }
 
         }
@@ -234,16 +231,18 @@ function wc_siru_add_to_gateways($gateways)
 }
 
 add_filter('woocommerce_payment_gateways', 'wc_siru_add_to_gateways');
+
 /**
  * Initialize Gateway Settings Form Fields
  */
-
 add_action('admin_notices', 'my_plugin_admin_notices');
 
 function my_plugin_admin_notices() {
-
-    if ( !is_plugin_active('siru-mobile/index.php') ) {
-        echo "<div class=' notice-warning notice is-dismissible'><p><b>Please make all configuration's </b> <a href=".admin_url('admin.php?page=siru-mobile-settings')."> Siru Mobile</a></a></p></div>";
+    if ( is_plugin_active('siru-mobile/siru-mobile.php') == true ) {
+        $merchantId = esc_attr( get_option( 'siru_mobile_merchant_id' ) );
+        if(empty($merchantId) == true) {
+            echo "<div class='notice-warning notice is-dismissible'><p><b>Please configure</b> <a href=".admin_url('admin.php?page=siru-mobile-settings').">Siru Mobile</a> payment gateway.</p></div>";
+        }
     }
 }
 
@@ -256,16 +255,69 @@ function wc_siru_disable_on_order_total($gateways) {
     global $woocommerce;
 
     if( isset($gateways['siru']) == true ) {
-        $limit= number_format(esc_attr( get_option( 'siru_mobile_maximum_payment_allowed' ) ), 2);
-        $total = number_format($woocommerce->cart->total, 2);
 
-        if(bccomp($limit, 0, 2) == 1 && bccomp($limit, $total, 2) == -1) {
+        $merchantId = esc_attr( get_option( 'siru_mobile_merchant_id' ) );
+
+        if(empty($merchantId) == true) {
             unset($gateways['siru']);
+        } else {
+
+            $limit= number_format(esc_attr( get_option( 'siru_mobile_maximum_payment_allowed' ) ), 2);
+            $total = number_format($woocommerce->cart->total, 2);
+
+            if(bccomp($limit, 0, 2) == 1 && bccomp($limit, $total, 2) == -1) {
+                unset($gateways['siru']);
+            }
+
         }
     }
 
     return $gateways;
 }
- 
+
+function wc_siru_verify_ip($gateways) {
+    if( isset($gateways['siru']) == true ) {
+
+        $ip = WC_Geolocation::get_ip_address();
+
+        // We keep IP verification results in session to avoid API call on each pageload
+        if(isset($_SESSION['wc_siru_verify_ip'])) {
+            if(isset($_SESSION['wc_siru_verify_ip'][$ip])) {
+                if($_SESSION['wc_siru_verify_ip'][$ip] == false) {
+                    unset($gateways['siru']);
+                }
+                return $gateways;
+            }
+        }
+
+        $merchantId = esc_attr( get_option( 'siru_mobile_merchant_id' ) );
+        $secret = esc_attr( get_option( 'siru_mobile_merchant_secret' ) );
+
+        $signature = new \Siru\Signature($merchantId, $secret);
+
+        $api = new \Siru\API($signature);
+        // @todo use production endpoint if configured by admin !!
+        $api->useStagingEndpoint();
+
+        try {
+
+            $allowed = $api->getFeaturePhoneApi()->isFeaturePhoneIP($ip);
+
+            $_SESSION['wc_siru_verify_ip'][$ip] = $allowed;
+
+            if($allowed == false) {
+                unset($gateways['siru']);
+            }
+
+        } catch (\Siru\Exception\ApiException $e) {
+            error_log(sprintf('Siru Payment Gateway: Unable to verify if %s is allowed to use mobile payments. %s', $ip, $e->getMessage()));
+        }
+
+    }
+
+    return $gateways;
+}
+
 add_filter( 'woocommerce_available_payment_gateways', 'wc_siru_disable_on_order_total' );
+add_filter( 'woocommerce_available_payment_gateways', 'wc_siru_verify_ip' );
 
