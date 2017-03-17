@@ -46,7 +46,7 @@ function wc_offline_gateway_init()
             $this->method_description = 'Enable Siru Mobile For Checkout';
             $this->icon = '';
             $this->title = 'Siru Mobile';
-            $this->description = 'Pay using either your Siru Mobile account.';
+            $this->description = 'Pay using your mobile phone.';
             $this->has_field = false;
             $this->method_title = 'Siru';
 
@@ -134,10 +134,6 @@ function wc_offline_gateway_init()
 
                 $purchaseCountry= esc_attr( get_option( 'siru_mobile_purchase_country' ) );
 
-                $api->setDefaults([
-                    'variant' => 'variant2',
-                    'purchaseCountry' => "$purchaseCountry"
-                ]);
 
                 // success
 //                ?siru_uuid=632ffd0c-9b73-4484-8141-c3a5b61364f3&siru_merchantId=75&siru_submerchantReference=&siru_purchaseReference=&siru_event=success&siru_signature=9dad00684a74f53bb17dac4cd0b9ecbfa65a29f9cadcafdd2711e6e4aab2455023760057a3a8a0a6b8e488e65aec7bd83a47221d9ab9743526ec504da9ce5170
@@ -148,22 +144,33 @@ function wc_offline_gateway_init()
                     $total =  $order->get_total();
                     $total = number_format($total,2);
 
-                    $taxClass = esc_attr( get_option( 'siru_mobile_tax_class' ) );
+                    $taxClass = (int)esc_attr( get_option( 'siru_mobile_tax_class' ) );
+
+                    // Siru variant2 requires price w/o VAT
+                    // To avoid decimal errors, deduct VAT from total instead of using $order->get_subtotal()
+                    // @todo what if VAT percentages change?
+                    $taxPercentages = array(1 => 0.1, 2 => 0.14, 3 => 0.24);
+                    if(isset($taxPercentages[$taxClass]) == true) {
+                        $total = bcdiv($total, $taxPercentages[$taxClass] + 1, 2);
+                    }
+
                     $serviceGroup = esc_attr( get_option( 'siru_mobile_service_group' ) );
                     $instantPay = esc_attr( get_option( 'siru_mobile_instant_pay' ) );
 
                     $transaction = $api->getPaymentApi()
-                        ->set('basePrice', "5.00")
+                        ->set('variant', 'variant2')
+                        ->set('purchaseCountry', $purchaseCountry)
+                        ->set('basePrice', $total)
                         ->set('redirectAfterSuccess', $url)
                         ->set('redirectAfterFailure', $url)
                         ->set('redirectAfterCancel', $url)
-                        ->set('taxClass', "$taxClass")
-                        ->set('serviceGroup', "$serviceGroup")
-                        ->set('instantPay', "$instantPay")
-//                      ->set('customerNumber', '442079460916')
-                        ->set('title', 'Product')
-                        ->set('customerLocale', 'en_GB')
-                        ->set('description', 'Product')
+                        ->set('taxClass', $taxClass)
+                        ->set('serviceGroup', $serviceGroup)
+                        ->set('instantPay', $instantPay)
+                        ->set('customerFirstName', $order->billing_first_name)
+                        ->set('customerLastName', $order->billing_last_name)
+                        ->set('customerEmail', $order->billing_email)
+                        ->set('customerLocale', get_locale())
                         ->createPayment();
 
                    $_SESSION['token_checkout'] = true;
@@ -240,5 +247,25 @@ function my_plugin_admin_notices() {
     }
 }
 
+/**
+ * Removes siru payment gateway option if maximum payment allowed is set and cart total exceeds it.
+ * @param  array $gateways
+ * @return array
+ */
+function wc_siru_disable_on_order_total($gateways) {
+    global $woocommerce;
 
+    if( isset($gateways['siru']) == true ) {
+        $limit= number_format(esc_attr( get_option( 'siru_mobile_maximum_payment_allowed' ) ), 2);
+        $total = number_format($woocommerce->cart->total, 2);
+
+        if(bccomp($limit, 0, 2) == 1 && bccomp($limit, $total, 2) == -1) {
+            unset($gateways['siru']);
+        }
+    }
+
+    return $gateways;
+}
+ 
+add_filter( 'woocommerce_available_payment_gateways', 'wc_siru_disable_on_order_total' );
 

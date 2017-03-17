@@ -53,12 +53,12 @@ function createOTUMenuPage() { ?>
                 </tr>
 
                 <tr>
-                    <th scope="row">Merchant Secret*</th>
+                    <th scope="row">Merchant secret*</th>
                     <td><input type="text" required name="siru_mobile_merchant_secret" class="regular-text" value="<?php echo esc_attr( get_option( 'siru_mobile_merchant_secret') ); ?>"/></td>
                 </tr>
 
                 <tr>
-                    <th scope="row">PurchaseCountry*</th>
+                    <th scope="row">Purchase country*</th>
                     <td>
                         <select name="siru_mobile_purchase_country"  <?php echo esc_attr( get_option( 'siru_mobile_purchase_country') ); ?>>
                             <?php $countries = ['FI','UK']; foreach ($countries as $value): ?>
@@ -69,11 +69,11 @@ function createOTUMenuPage() { ?>
                 </tr>
 
                 <tr>
-                    <th scope="row">SubmerchantReferences</th>
+                    <th scope="row">Submerchant reference</th>
                     <td><input type="text" name="siru_mobile_submerchant_references" class="regular-text" value="<?php echo esc_attr( get_option( 'siru_mobile_submerchant_references') ); ?>"/></td>
                 </tr>
                 <tr>
-                    <th scope="row">TaxClass</th>
+                    <th scope="row">Tax class</th>
                     <td>
                         <select name="siru_mobile_tax_class" required>
                             <?php $tax = 0; while ($tax < 4): ?>
@@ -84,7 +84,7 @@ function createOTUMenuPage() { ?>
                 </tr>
 
                 <tr>
-                    <th scope="row">ServiceGroup</th>
+                    <th scope="row">Service group</th>
                     <td>
                         <select name="siru_mobile_service_group" required>
                             <?php $service = 0; while ($service < 4): ?>
@@ -96,7 +96,7 @@ function createOTUMenuPage() { ?>
 
 
                 <tr>
-                    <th scope="row">InstantPay</th>
+                    <th scope="row">Instant payment</th>
 
                     <td>
                         <select name="siru_mobile_instant_pay" >
