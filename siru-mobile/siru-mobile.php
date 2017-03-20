@@ -131,10 +131,6 @@ function createOTUMenuPage() { ?>
                     <td><input type="number" required name="siru_mobile_maximum_payment_allowed" class="regular-text" value="<?= (get_option( 'siru_mobile_maximum_payment_allowed' ) == '')? 60: esc_attr( get_option( 'siru_mobile_maximum_payment_allowed' ) ); ?>"/></td>
                 </tr>
 
-                <tr>
-                    <th scope="row"><?php _e( 'Mobile payment fee', 'siru-mobile' ) ?></th>
-                    <td><input type="number" name="siru_mobile_mobile_payment_fee" class="regular-text" value="<?= (get_option( 'siru_mobile_mobile_payment_fee' ) == '')? 0:  esc_attr( get_option( 'siru_mobile_mobile_payment_fee' ) ); ?>"/></td>
-                </tr>
 
             </table>
             <p><?php submit_button(); ?></p>
@@ -160,7 +156,6 @@ function registerOTUSettings() {
     register_setting( 'siru-mobile-settings-group', 'siru_mobile_instant_pay' );
     register_setting( 'siru-mobile-settings-group', 'siru_mobile_service_group' );
     register_setting( 'siru-mobile-settings-group', 'siru_mobile_maximum_payment_allowed' );
-    register_setting( 'siru-mobile-settings-group', 'siru_mobile_mobile_payment_fee' );
 }
 
 
