@@ -37,6 +37,7 @@ function wc_offline_gateway_init()
     class WC_Siru_Mobile extends WC_Payment_Gateway
     {
         public $place_order;
+
         /**
          * WC_Siru_Mobile constructor.
          */
@@ -51,17 +52,16 @@ function wc_offline_gateway_init()
             $this->method_title = 'Siru';
 
             if (empty($_GET['siru_event']) || $_GET['siru_event'] == 'failure' || $_GET['siru_event'] == 'cancel') {
-
                 unset($_SESSION['token_checkout']);
 
                 $this->order_button_text = __('Continue to payment', 'woocommerce-sirumobile-checkout');
             }
 
-            add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-
-
             $this->init_form_fields();
             $this->init_settings();
+
+            add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+
         }
 
         /**
@@ -88,6 +88,8 @@ function wc_offline_gateway_init()
          */
         public function process_payment($order_id)
         {
+            global $woocommerce;
+
             $order = wc_get_order($order_id);
 
             $token_active = isset($_SESSION['token_checkout']) ? $_SESSION['token_checkout'] : null;
@@ -101,7 +103,7 @@ function wc_offline_gateway_init()
 
             if(isset($_GET['siru_event']) == true) {
                 if($signature->isNotificationAuthentic($_GET)) {
-                    if($_GET['siru_event'] != 'failure' && !is_null($token_active)){
+                    if($_GET['siru_event'] != 'failure' && !is_null($token_active)) {
                         $failure = true;
                     }
                 }
@@ -138,7 +140,8 @@ function wc_offline_gateway_init()
 //              ?siru_uuid=632ffd0c-9b73-4484-8141-c3a5b61364f3&siru_merchantId=75&siru_submerchantReference=&siru_purchaseReference=&siru_event=success&siru_signature=9dad00684a74f53bb17dac4cd0b9ecbfa65a29f9cadcafdd2711e6e4aab2455023760057a3a8a0a6b8e488e65aec7bd83a47221d9ab9743526ec504da9ce5170
 
                 try {
-                    $url = get_site_url() . '/checkout';
+#                    $url = get_site_url() . '/checkout';
+                    $url = $woocommerce->cart->get_checkout_url();
 
                     $total =  $order->get_total();
                     $total = number_format($total,2);
@@ -274,19 +277,25 @@ function wc_siru_disable_on_order_total($gateways) {
     return $gateways;
 }
 
+/**
+ * Checks if users IP-address is allowed to make mobile payments. If not, remove Siru from payment options.
+ * @param  array $gateways
+ * @return array
+ */
 function wc_siru_verify_ip($gateways) {
     if( isset($gateways['siru']) == true ) {
 
         $ip = WC_Geolocation::get_ip_address();
 
+        $cache = (array) get_transient('wc_siru_ip_check');
+
         // We keep IP verification results in session to avoid API call on each pageload
-        if(isset($_SESSION['wc_siru_verify_ip'])) {
-            if(isset($_SESSION['wc_siru_verify_ip'][$ip])) {
-                if($_SESSION['wc_siru_verify_ip'][$ip] == false) {
-                    unset($gateways['siru']);
-                }
-                return $gateways;
+        if(isset($cache[$ip])) {
+            if($cache[$ip] == false) {
+                unset($gateways['siru']);
             }
+
+            return $gateways;
         }
 
         $merchantId = esc_attr( get_option( 'siru_mobile_merchant_id' ) );
@@ -296,10 +305,8 @@ function wc_siru_verify_ip($gateways) {
 
         $api = new \Siru\API($signature);
 
-
+        // Use production endpoint if configured by admin
         $endPoint = esc_attr( get_option( 'siru_mobile_api_endpoint' ) );
-
-        // @todo use production endpoint if configured by admin !!
         if(!$endPoint){
             $api->useStagingEndpoint();
         }
@@ -308,7 +315,9 @@ function wc_siru_verify_ip($gateways) {
 
             $allowed = $api->getFeaturePhoneApi()->isFeaturePhoneIP($ip);
 
-            $_SESSION['wc_siru_verify_ip'][$ip] = $allowed;
+            // Cache result for one houre
+            $cache[$ip] = $allowed;
+            set_transient('wc_siru_ip_check', $cache, 3600);
 
             if($allowed == false) {
                 unset($gateways['siru']);
@@ -327,9 +336,9 @@ add_filter( 'woocommerce_available_payment_gateways', 'wc_siru_disable_on_order_
 add_filter( 'woocommerce_available_payment_gateways', 'wc_siru_verify_ip' );
 
 
-
 function myplugin_init() {
     $plugin_dir = basename(dirname(__FILE__));
     load_plugin_textdomain( 'my-plugin', false, $plugin_dir );
 }
 add_action('plugins_loaded', 'myplugin_init');
+
