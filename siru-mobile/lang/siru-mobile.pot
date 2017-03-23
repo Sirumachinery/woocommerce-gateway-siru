@@ -1,0 +1,92 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Siru Woocommerce Plugin\n"
+"POT-Creation-Date: 2017-03-23 13:10+0200\n"
+"PO-Revision-Date: 2017-03-23 13:17+0200\n"
+"Last-Translator: \n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"Language: LANGUAGE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.7.1\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-SearchPath-0: includes\n"
+"X-Poedit-SearchPath-1: siru-mobile.php\n"
+
+#: includes/class-wc-gateway-sirumobile.php:50
+msgid ""
+"Enable payments by mobile phone. A new transaction is created using Siru "
+"Mobile payment gateway where user is redirected to confirm payment. Payments "
+"are charged in users mobile phone bill. Mobile payment is only available in "
+"Finland when using mobile internet connection."
+msgstr ""
+
+#: includes/class-wc-gateway-sirumobile.php:53
+msgid "Pay using your mobile phone."
+msgstr ""
+
+#: includes/class-wc-gateway-sirumobile.php:60
+msgid "Continue to payment"
+msgstr ""
+
+#: includes/class-wc-gateway-sirumobile.php:112
+msgid "Gateway Disabled"
+msgstr ""
+
+#: includes/class-wc-gateway-sirumobile.php:112
+msgid "Siru mobile payments are not available in your store currency."
+msgstr ""
+
+#: includes/class-wc-gateway-sirumobile.php:200
+msgid "Enable/Disable"
+msgstr ""
+
+#: includes/class-wc-gateway-sirumobile.php:202
+msgid "Enable SiruMobile Payment"
+msgstr ""
+
+#: includes/class-wc-gateway-sirumobile.php:298
+msgid "payment completed"
+msgstr ""
+
+#: includes/hooks.php:11
+msgid "Settings"
+msgstr ""
+
+#: includes/hooks.php:75
+msgid "Use live environment"
+msgstr ""
+
+#: includes/hooks.php:80
+msgid "MerchantId*"
+msgstr ""
+
+#: includes/hooks.php:85
+msgid "Merchant secret*"
+msgstr ""
+
+#: includes/hooks.php:90
+msgid "Purchase country*"
+msgstr ""
+
+#: includes/hooks.php:101
+msgid "Submerchant reference"
+msgstr ""
+
+#: includes/hooks.php:105
+msgid "Tax class"
+msgstr ""
+
+#: includes/hooks.php:116
+msgid "Service group"
+msgstr ""
+
+#: includes/hooks.php:128
+msgid "Instant payment"
+msgstr ""
+
+#: includes/hooks.php:140
+msgid "Maximum payment allowed*"
+msgstr ""

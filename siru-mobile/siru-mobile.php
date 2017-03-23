@@ -25,8 +25,8 @@ function wc_gateway_sirumobile_init() {
 
     if (!class_exists('WC_Payment_Gateway')) return;
 
-    require_once ABSPATH . '/wp-content/plugins/siru-mobile/includes/hooks.php';
-    require_once ABSPATH . '/wp-content/plugins/siru-mobile/includes/class-wc-gateway-sirumobile.php';
+    require_once ABSPATH . 'wp-content/plugins/siru-mobile/includes/hooks.php';
+    require_once ABSPATH . 'wp-content/plugins/siru-mobile/includes/class-wc-gateway-sirumobile.php';
 
 }
 

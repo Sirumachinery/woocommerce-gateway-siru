@@ -3,19 +3,19 @@
 /**
  * Create Settings Link
  */
+add_filter('plugin_action_links', 'wc_gateway_sirumobile_settings_link', 10, 2 );
 function wc_gateway_sirumobile_settings_link($links, $file) {
-    static $this_plugin;
-    if (!$this_plugin) $this_plugin = plugin_basename(__FILE__);
+    $this_plugin = 'siru-mobile/siru-mobile.php';
 
     if ($file == $this_plugin){
-        $settings_link = '<a href="admin.php?page=siru-mobile-settings">'.__("Settings", "siru-mobile").'</a>';
+        $settings_link = '<a href="admin.php?page=siru-mobile-settings">'.__("Settings", "woocommerce").'</a>';
         array_unshift($links, $settings_link);
     }
     return $links;
 }
-add_filter('plugin_action_links', 'wc_gateway_sirumobile_settings_link', 10, 2 );
 
 
+add_filter( 'locale', 'wc_gateway_sirumobile_theme_localized' );
 function wc_gateway_sirumobile_theme_localized( $locale ) {
     if (isset($_GET['l']) == true) {
         return esc_attr( $_GET['l'] );
@@ -23,37 +23,37 @@ function wc_gateway_sirumobile_theme_localized( $locale ) {
 
     return $locale;
 }
-add_filter( 'locale', 'wc_gateway_sirumobile_theme_localized' );
 
 
 /**
  * Load text domain for translations.
  */
+add_action('plugins_loaded', 'wc_gateway_sirumobile_load_language', 12);
 function wc_gateway_sirumobile_load_language(){
-    load_plugin_textdomain( 'siru-mobile', false, basename( dirname( __FILE__ ) ) . '/lang' );
+    $path = 'siru-mobile/lang';
+    load_plugin_textdomain('siru-mobile', false, $path);
 }
-add_action('plugins_loaded', 'wc_gateway_sirumobile_load_language');
 
 
 /**
  * Notify user if he has not configured the plugin.
  */
+add_action('admin_notices', 'my_plugin_admin_notices');
 function my_plugin_admin_notices() {
 
     if ( !is_plugin_active('siru-mobile/index.php') && !get_option( 'siru_mobile_merchant_secret' ) ) {
         echo "<div class='notice-warning notice is-dismissible'><p><b>Please configure</b> <a href=".admin_url('admin.php?page=siru-mobile-settings').">Siru Mobile</a> payment gateway.</p></div>";
     }
 }
-add_action('admin_notices', 'my_plugin_admin_notices');
 
 
 /**
  * Create Settings Menu.
  */
+add_action( 'admin_menu', 'wc_gateway_sirumobile_create_menu' );
 function wc_gateway_sirumobile_create_menu() {
     add_menu_page( 'Siru Mobile', 'Siru Mobile', 'manage_options', 'siru-mobile-settings', 'wc_gateway_sirumobile_create_menupage', 'dashicons-smartphone', 32 );
 }
-add_action( 'admin_menu', 'wc_gateway_sirumobile_create_menu' );
 
 
 /**
@@ -102,7 +102,7 @@ function wc_gateway_sirumobile_create_menupage() { ?>
                     <td><input type="text" name="siru_mobile_submerchant_references" class="regular-text" value="<?php echo esc_attr( get_option( 'siru_mobile_submerchant_references') ); ?>"/></td>
                 </tr>
                 <tr>
-                    <th scope="row"><?php _e( 'Tax class', 'sirumobile-tax-class' ) ?></th>
+                    <th scope="row"><?php _e( 'Tax class', 'siru-mobile' ) ?></th>
                     <td>
                         <select name="siru_mobile_tax_class" required>
                             <?php $tax = 0; while ($tax < 4): ?>

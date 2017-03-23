@@ -197,7 +197,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $this->form_fields = array(
 
             'enabled' => array(
-                'title' => __('Enable/Disable', 'siru-mobile'),
+                'title' => __('Enable/Disable', 'woocommerce'),
                 'type' => 'checkbox',
                 'label' => __('Enable SiruMobile Payment', 'siru-mobile'),
                 'desc_tip'    => true,
@@ -270,10 +270,10 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             );
 
         } catch (\Siru\Exception\InvalidResponseException $e) {
-            error_log('Siru Payment Gateway: Unable to contact payment API. Check credentials.');
+            self::log('InvalidResponseException: Unable to contact payment API. Check credentials.');
 
         } catch (\Siru\Exception\ApiException $e) {
-            error_log('Siru Payment Gateway: Failed to create transaction. ' . implode(" ", $e->getErrorStack()));
+            self::log('ApiException: Failed to create transaction. ' . implode(" ", $e->getErrorStack()));
         }
 
         return;
