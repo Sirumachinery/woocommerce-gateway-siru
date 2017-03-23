@@ -7,7 +7,7 @@ Version: 2.6
 Author: Siru Mobile
 Author URI: https://sirumobile.com
 License: GPLv2 or later
-Text Domain:
+Text Domain: siru-mobile
 */
 
 if (!defined('ABSPATH')) {
@@ -33,6 +33,24 @@ function add_settings_link($links, $file) {
 }
 
 add_filter('plugin_action_links', 'add_settings_link', 10, 2 );
+
+
+add_filter( 'locale', 'my_theme_localized' );
+function my_theme_localized( $locale ){
+
+    if ( ! isset( $_GET['l'] ) )
+        return esc_attr( $_GET['l'] );
+
+
+    return $locale;
+}
+
+add_action('plugins_loaded', 'true_load_language');
+
+function true_load_language(){
+    load_plugin_textdomain( 'siru-mobile', false, basename( dirname( __FILE__ ) ) . '/lang' );
+}
+
 
 
 /**
