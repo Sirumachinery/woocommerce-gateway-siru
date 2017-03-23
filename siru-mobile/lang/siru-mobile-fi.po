@@ -44,10 +44,6 @@ msgstr "Maksutapa ei ole käytössä"
 msgid "Siru mobile payments are not available in your store currency."
 msgstr "Siru mobiilimaksaminen ei ole saatavilla kauppasi valuutalle."
 
-#: includes/class-wc-gateway-sirumobile.php:200
-msgid "Enable/Disable"
-msgstr "Ota käyttöön/Poista käytöstä"
-
 #: includes/class-wc-gateway-sirumobile.php:202
 msgid "Enable SiruMobile Payment"
 msgstr "Ota käyttöön Siru mobiilimaksaminen"

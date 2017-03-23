@@ -39,10 +39,6 @@ msgstr ""
 msgid "Siru mobile payments are not available in your store currency."
 msgstr ""
 
-#: includes/class-wc-gateway-sirumobile.php:200
-msgid "Enable/Disable"
-msgstr ""
-
 #: includes/class-wc-gateway-sirumobile.php:202
 msgid "Enable SiruMobile Payment"
 msgstr ""

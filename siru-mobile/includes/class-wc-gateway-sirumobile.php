@@ -25,6 +25,17 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 {
 
     /**
+     * Array that maps Siru tax class codes to tax percentages.
+     * @var array
+     */
+    public static $tax_classes = array(
+        0 => 0,
+        1 => 10,
+        2 => 14,
+        3 => 24
+    );
+
+    /**
      * @var WC_Logger Logger
      */
     public static $log = false;
@@ -49,12 +60,10 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $this->method_title = 'Siru Mobile';
         $this->method_description = __('Enable payments by mobile phone. A new transaction is created using Siru Mobile payment gateway where user is redirected to confirm payment. Payments are charged in users mobile phone bill. Mobile payment is only available in Finland when using mobile internet connection.', 'siru-mobile');
         $this->icon = '';
-        $this->title = 'Siru Mobile';
-        $this->description = __('Pay using your mobile phone.', 'siru-mobile');
         $this->has_field = false;
 
         // Set maximum payment amount allowed for mobile payments
-        $this->max_amount = number_format(esc_attr( get_option( 'siru_mobile_maximum_payment_allowed' ) ), 2);
+        $this->max_amount = number_format((float) $this->get_option('maximum_payment'), 2);
 
         if (empty($_GET['siru_event']) || $_GET['siru_event'] != 'success') {
             $this->order_button_text = __('Continue to payment', 'siru-mobile');
@@ -62,6 +71,9 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         $this->init_form_fields();
         $this->init_settings();
+
+        $this->title = $this->get_option('title', __('Siru Mobile'));
+        $this->description = $this->get_option('description', __('Pay using your mobile phone.', 'siru-mobile'));
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ));
 
@@ -73,6 +85,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             // Payment listener/API hook
             add_action('woocommerce_api_wc_gateway_sirumobile', array($this, 'callbackHandler'));
         }
+
     }
 
     /**
@@ -81,8 +94,13 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     public function is_available()
     {
-        $merchantId = esc_attr( get_option( 'siru_mobile_merchant_id' ) );
-        if(empty($merchantId) == true) {
+        if($this->enabled === 'no') {
+            return false;
+        }
+
+        $merchantId = trim(esc_attr($this->get_option('merchant_id')));
+        $secret = trim(esc_attr($this->get_option('merchant_secret')));
+        if(empty($merchantId) == true || empty($secret) == true) {
             return false;
         }
 
@@ -133,9 +151,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $signature = $this->getSignature();
         $api = new \Siru\API($signature);
 
-        // Use production endpoint if configured by admin
-        $endPoint = esc_attr( get_option( 'siru_mobile_api_endpoint' ) );
-        if(!$endPoint){
+        // Use sandbox endpoint if configured by admin
+        if($this->get_option('sandbox', 'yes') === 'yes'){
             $api->useStagingEndpoint();
         }
 
@@ -160,12 +177,36 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         $entityBody = file_get_contents('php://input');
         $entityBodyAsJson = json_decode($entityBody, true);
-
         if(is_array($entityBodyAsJson) && isset($entityBodyAsJson['siru_event'])) {
 
             if($signature->isNotificationAuthentic($entityBodyAsJson)) {
-                self::log(sprintf('Received %s notification.', $entityBodyAsJson['siru_event']));
+
+                $order_id = $entityBodyAsJson['purchaseReference'];
+                $order  = wc_get_order($order_id);
+                $uuid = $entityBodyAsJson['uuid'];
+
                 // Notification was sent by Siru Mobile and is authentic
+                if ($order->has_status( 'completed')) {
+                    self::log(sprintf('Received %s notification for completed order %s. Ignoring.', $entityBodyAsJson['siru_event'], $order_id));
+                    return;
+                } else {
+                    self::log(sprintf('Received %s notification for order %s.', $entityBodyAsJson['siru_event'], $order_id));
+                }
+
+                switch($entityBodyAsJson['siru_event']) {
+                    case 'success':
+                        $order->payment_complete($uuid);
+                        break;
+
+                    case 'canceled':
+                        break;
+
+                    case 'failure':
+                        $order->update_status('failed', $uuid);
+                        break;
+                }
+
+                
             } else {
                 self::log(sprintf('Received %s notification with invalid or missing signature.', $entityBodyAsJson['siru_event']));
             }
@@ -177,7 +218,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     }
 
     /**
-     * Logging method.
+     * Logs message
      * @param string $message
      */
     public static function log( $message ) {
@@ -190,10 +231,31 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     }
 
     /**
-     *
+     * Returns default value for Siru Tax class based on Woocommerce base tax rates.
+     * @param  integer $default
+     * @return integer
+     */
+    private function get_base_tax_class($default = 3)
+    {
+        foreach(WC_Tax::get_base_tax_rates() as $rate) {
+            $key = array_search((int) $rate['rate'], self::$tax_classes);
+            if($key !== false) return $key;
+        }
+
+        return $default;
+    }
+
+    /**
+     * Configures payment gateway admin section.
      */
     public function init_form_fields()
     {
+        $tax_classes = self::$tax_classes;
+        foreach($tax_classes as &$percentage) {
+            $percentage = "{$percentage}%";
+        }
+        unset($percentage);
+
         $this->form_fields = array(
 
             'enabled' => array(
@@ -202,8 +264,78 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 'label' => __('Enable SiruMobile Payment', 'siru-mobile'),
                 'desc_tip'    => true,
                 'default' => 'no'
-            )
+            ),
 
+            'title' => array(
+                'title' => __('Title', 'woocommerce'),
+                'type' => 'text',
+                'placeholder' => __('Siru Mobile', 'siru-mobile')
+            ),
+            'description' => array(
+                'title' => __('Description', 'woocommerce'),
+                'type' => 'text',
+                'placeholder' => __('Pay using your mobile phone.', 'siru-mobile')
+            ),
+
+            'sandbox' => array(
+                'title' => __('Sandbox', 'siru-mobile'),
+                'type' => 'checkbox',
+                'label' => __('Use Siru Mobile sandbox environment.', 'siru-mobile'),
+                'description'    => __('Sandbox environment is for testing mobile payments without actually charging the user. Remember that you may need separate credentials for sandbox and production endpoints.'),
+                'default' => 'yes'
+            ),
+            'merchant_id' => array(
+                'title' => __('Merchant Id', 'siru-mobile'),
+                'type' => 'text',
+                'description' => __('REQUIRED: Your merchantId provided by Siru Mobile', 'siru-mobile')
+            ),
+            'merchant_secret' => array(
+                'title' => __('Merchant secret', 'siru-mobile'),
+                'type' => 'text',
+                'description' => __('REQUIRED: Your merchant secret provided by Siru Mobile', 'siru-mobile')
+            ),
+            'submerchant_reference' => array(
+                'title' => __('Sub-merchant reference', 'siru-mobile'),
+                'type' => 'text',
+                'desc_tip' => __('Optional store identifier if you have more than one store using the same merchantId.', 'siru-mobile')
+            ),
+            'purchase_country' => array(
+                'title' => __('Purchase country', 'siru-mobile'),
+                'type' => 'select',
+                'options' => array(
+                    'FI' => 'Finland'
+                ),
+                'default' => 'FI'
+            ),
+            'tax_class' => array(
+                'title' => __('Tax class', 'siru-mobile'),
+                'type' => 'select',
+                'options' => $tax_classes,
+                'default' => $this->get_base_tax_class()
+            ),
+            'service_group' => array(
+                'title' => __('Service group', 'siru-mobile'),
+                'type' => 'select',
+                'options' => array(
+                    '1' => __('Non-profit services'),
+                    '2' => __('Online services'),
+                    '3' => __('Entertainment services'),
+                    '4' => __('Adult entertainment services'),
+                ),
+                'default' => 2
+            ),
+            'instantpay' => array(
+                'title' => __('Instant payment', 'siru-mobile'),
+                'type' => 'checkbox',
+                'label' => __('Use fast checkout process', 'siru-mobile'),
+                'default' => 'yes'
+            ),
+            'maximum_payment' => array(
+                'title' => __('Maximum payment allowed', 'siru-mobile'),
+                'type' => 'text',
+                'desc_tip' => __('Maximum payment amount available for mobile payments.', 'siru-mobile'),
+                'default' => 60
+            ),
         );
     }
 
@@ -220,9 +352,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $signature = $this->getSignature();
         $api = new \Siru\API($signature);
 
-        // Use production endpoint if configured by admin
-        $endPoint = esc_attr( get_option( 'siru_mobile_api_endpoint' ) );
-        if(!$endPoint){
+        // Use sandbox endpoint if configured by admin
+        if($this->get_option('sandbox', 'yes') === 'yes'){
             $api->useStagingEndpoint();
         }
 
@@ -233,8 +364,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             $total = $order->get_total();
             $total = number_format($total, 2);
 
-            $purchaseCountry = esc_attr( get_option( 'siru_mobile_purchase_country' ) );
-            $taxClass = (int)esc_attr( get_option( 'siru_mobile_tax_class' ) );
+            $purchaseCountry = esc_attr( $this->get_option( 'purchase_country', 'FI' ) );
+            $taxClass = (int)esc_attr( $this->get_option( 'tax_class' ) );
 
             // Siru variant2 requires price w/o VAT
             // To avoid decimal errors, deduct VAT from total instead of using $order->get_subtotal()
@@ -244,8 +375,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 $total = bcdiv($total, $taxPercentages[$taxClass] + 1, 2);
             }
 
-            $serviceGroup = esc_attr( get_option( 'siru_mobile_service_group' ) );
-            $instantPay = esc_attr( get_option( 'siru_mobile_instant_pay' ) );
+            $serviceGroup = esc_attr( $this->get_option( 'service_group' ) );
+            $instantPay = $this->get_option('instantpay', 'yes') === 'yes' ? 1: 0;
 
             // notifyAfter should be WC()->api_request_url('WC_Gateway_Sirumobile')
             $transaction = $api->getPaymentApi()
@@ -262,6 +393,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 ->set('customerLastName', $order->billing_last_name)
                 ->set('customerEmail', $order->billing_email)
                 ->set('customerLocale', get_locale())
+                ->set('purchaseReference', $order->id)
                 ->createPayment();
 
             return array(
@@ -333,22 +465,10 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     private function getSignature()
     {
-        $merchantId = esc_attr( get_option( 'siru_mobile_merchant_id' ) );
-        $secret = esc_attr( get_option( 'siru_mobile_merchant_secret' ) );
+        $merchantId = esc_attr( $this->get_option( 'merchant_id' ) );
+        $secret = esc_attr( $this->get_option( 'merchant_secret' ) );
 
         return new \Siru\Signature($merchantId, $secret);
     }
 
 }
-
-
-/**
- * @param $gateways
- * @return array
- */
-function wc_siru_add_to_gateways($gateways)
-{
-    $gateways[] = 'WC_Gateway_Sirumobile';
-    return $gateways;
-}
-add_filter('woocommerce_payment_gateways', 'wc_siru_add_to_gateways');

@@ -28,6 +28,17 @@ function wc_gateway_sirumobile_init() {
     require_once ABSPATH . 'wp-content/plugins/siru-mobile/includes/hooks.php';
     require_once ABSPATH . 'wp-content/plugins/siru-mobile/includes/class-wc-gateway-sirumobile.php';
 
+    add_filter('woocommerce_payment_gateways', 'wc_siru_add_to_gateways');
+}
+
+/**
+ * @param $gateways
+ * @return array
+ */
+function wc_siru_add_to_gateways($gateways)
+{
+    $gateways[] = 'WC_Gateway_Sirumobile';
+    return $gateways;
 }
 
 add_action('plugins_loaded', 'wc_gateway_sirumobile_init', 11);
