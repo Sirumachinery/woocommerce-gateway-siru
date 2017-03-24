@@ -18,15 +18,21 @@ class WC_Gateway_Sirumobile_Response {
     }
 
     /**
-     * [handleRequest description]
-     * @param  array  $data [description]
-     * @return [type]       [description]
+     * Takes Siru GET parameters at redirectAfter* URL and updates order accordingly.
+     * @param  array  $data
+     * @return boolean False on error
      */
     public function handleRequest(array $data)
     {
         return $this->updateOrder($data, 'request');
     }
 
+    /**
+     * Takes Siru JSON data at notifyAfter* URL and updates order accordingly.
+     * On error, HTTP 500 response is sent.
+     * @param  array  $data
+     * @return boolean Always true
+     */
     public function handleNotify(array $data)
     {
         $success = $this->updateOrder($data, 'notification', $errorstr);

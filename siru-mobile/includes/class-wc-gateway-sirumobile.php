@@ -253,7 +253,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 'title' => __('Sandbox', 'siru-mobile'),
                 'type' => 'checkbox',
                 'label' => __('Use Siru Mobile sandbox environment.', 'siru-mobile'),
-                'description'    => __('Sandbox environment is for testing mobile payments without actually charging the user. Remember that you may need separate credentials for sandbox and production endpoints.'),
+                'description'    => __('Sandbox environment is for testing mobile payments without actually charging the user. Remember that you may need separate credentials for sandbox and production endpoints.', 'siru-mobile'),
                 'default' => 'yes'
             ),
             'merchant_id' => array(

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Siru Woocommerce Plugin\n"
-"POT-Creation-Date: 2017-03-23 13:10+0200\n"
-"PO-Revision-Date: 2017-03-23 13:27+0200\n"
+"POT-Creation-Date: 2017-03-24 15:11+0200\n"
+"PO-Revision-Date: 2017-03-24 15:25+0200\n"
 "Last-Translator: \n"
 "Language-Team: Siru Mobile <dev@sirumobile.com>\n"
 "Language: fi_FI\n"
@@ -16,7 +16,11 @@ msgstr ""
 "X-Poedit-SearchPath-0: includes\n"
 "X-Poedit-SearchPath-1: siru-mobile.php\n"
 
-#: includes/class-wc-gateway-sirumobile.php:50
+#: includes/class-wc-gateway-sirumobile-response.php:68
+msgid "Canceled by user"
+msgstr "Käyttäjä keskeytti"
+
+#: includes/class-wc-gateway-sirumobile.php:61
 msgid ""
 "Enable payments by mobile phone. A new transaction is created using Siru "
 "Mobile payment gateway where user is redirected to confirm payment. Payments "
@@ -28,66 +32,157 @@ msgstr ""
 "käyttäjän matkapuhelinlaskulla. Mobiilimaksaminen on käytössä vain "
 "Suomalaisista mobiili-internet liittymistä."
 
-#: includes/class-wc-gateway-sirumobile.php:53
-msgid "Pay using your mobile phone."
-msgstr "Maksa matkapuhelimellasi"
-
-#: includes/class-wc-gateway-sirumobile.php:60
+#: includes/class-wc-gateway-sirumobile.php:69
 msgid "Continue to payment"
 msgstr "Siirry maksamaan"
 
-#: includes/class-wc-gateway-sirumobile.php:112
+#: includes/class-wc-gateway-sirumobile.php:75
+#: includes/class-wc-gateway-sirumobile.php:244
+msgid "Siru Mobile"
+msgstr "Siru Mobile"
+
+#: includes/class-wc-gateway-sirumobile.php:76
+#: includes/class-wc-gateway-sirumobile.php:249
+msgid "Pay using your mobile phone."
+msgstr "Maksa matkapuhelimellasi"
+
+#: includes/class-wc-gateway-sirumobile.php:130
 msgid "Gateway Disabled"
 msgstr "Maksutapa ei ole käytössä"
 
-#: includes/class-wc-gateway-sirumobile.php:112
+#: includes/class-wc-gateway-sirumobile.php:130
 msgid "Siru mobile payments are not available in your store currency."
 msgstr "Siru mobiilimaksaminen ei ole saatavilla kauppasi valuutalle."
 
-#: includes/class-wc-gateway-sirumobile.php:202
+#: includes/class-wc-gateway-sirumobile.php:234
+msgid "Enable/Disable"
+msgstr "Ota käyttöön/poista käytöstä"
+
+#: includes/class-wc-gateway-sirumobile.php:236
 msgid "Enable SiruMobile Payment"
 msgstr "Ota käyttöön Siru mobiilimaksaminen"
 
-#: includes/class-wc-gateway-sirumobile.php:298
-msgid "payment completed"
-msgstr "maksu on valmis"
+#: includes/class-wc-gateway-sirumobile.php:242
+msgid "Title"
+msgstr "Otsikko"
+
+#: includes/class-wc-gateway-sirumobile.php:247
+msgid "Description"
+msgstr "Kuvaus"
+
+#: includes/class-wc-gateway-sirumobile.php:253
+msgid "Sandbox"
+msgstr "Hiekkalaatikko"
+
+#: includes/class-wc-gateway-sirumobile.php:255
+msgid "Use Siru Mobile sandbox environment."
+msgstr "Käytä Siru Mobilen testiympäristöä"
+
+#: includes/class-wc-gateway-sirumobile.php:256
+msgid ""
+"Sandbox environment is for testing mobile payments without actually charging "
+"the user. Remember that you may need separate credentials for sandbox and "
+"production endpoints."
+msgstr ""
+"Testiympäristö eli hiekkalaatikko on tarkoitettu maksujen testaamiseen ilman "
+"että käyttäjää veloitetaan. Muista että saatat tarvita erilliset tunnukset "
+"kun siirryt käyttämään tuotantoympäristöä."
+
+#: includes/class-wc-gateway-sirumobile.php:260
+msgid "Merchant Id"
+msgstr "Kauppiastunnus"
+
+#: includes/class-wc-gateway-sirumobile.php:262
+msgid "REQUIRED: Your merchantId provided by Siru Mobile"
+msgstr "PAKOLLINEN: Anna kauppiastunnus jonka olet saanut Siru Mobilelta"
+
+#: includes/class-wc-gateway-sirumobile.php:265
+msgid "Merchant secret"
+msgstr "Kauppiasavain"
+
+#: includes/class-wc-gateway-sirumobile.php:267
+msgid "REQUIRED: Your merchant secret provided by Siru Mobile"
+msgstr "PAKOLLINEN: Anna kauppiasavain jonka olet saanut Siru Mobilelta"
+
+#: includes/class-wc-gateway-sirumobile.php:270
+msgid "Sub-merchant reference"
+msgstr "Jälleenmyyjän tunniste"
+
+#: includes/class-wc-gateway-sirumobile.php:272
+msgid ""
+"Optional store identifier if you have more than one store using the same "
+"merchantId."
+msgstr ""
+"Jos käytät samaa kauppiastunnusta useassa verkkokaupassa, voit eritellä "
+"maksut antamalla joka kaupalle oman tunnisteen."
+
+#: includes/class-wc-gateway-sirumobile.php:275
+msgid "Purchase country"
+msgstr "Maa"
+
+#: includes/class-wc-gateway-sirumobile.php:283
+msgid "Tax class"
+msgstr "Veroluokka"
+
+#: includes/class-wc-gateway-sirumobile.php:289
+msgid "Service group"
+msgstr "Palveluluokka"
+
+#: includes/class-wc-gateway-sirumobile.php:292
+msgid "Non-profit services"
+msgstr "Yleishyödylliset palvelut"
+
+#: includes/class-wc-gateway-sirumobile.php:293
+msgid "Online services"
+msgstr "Asiointipalvelut"
+
+#: includes/class-wc-gateway-sirumobile.php:294
+msgid "Entertainment services"
+msgstr "Ajanvietepalvelut"
+
+#: includes/class-wc-gateway-sirumobile.php:295
+msgid "Adult entertainment services"
+msgstr "Aikuisviihdepalvelut"
+
+#: includes/class-wc-gateway-sirumobile.php:300
+msgid "Instant payment"
+msgstr "Nopea maksaminen"
+
+#: includes/class-wc-gateway-sirumobile.php:302
+msgid "Use fast checkout process"
+msgstr "Käytä nopeaa maksuprosessia (suositus)"
+
+#: includes/class-wc-gateway-sirumobile.php:306
+msgid "Maximum payment allowed"
+msgstr "Suurin sallittu maksu"
+
+#: includes/class-wc-gateway-sirumobile.php:308
+msgid "Maximum payment amount available for mobile payments."
+msgstr ""
+"Suurin sallittu summa mobiilimaksuille. Mikäli ostoskorin arvo ylittää tämän "
+"summan, mobiilimaksaminen ei ole käytettävissä."
 
 #: includes/hooks.php:11
 msgid "Settings"
 msgstr "Asetukset"
 
-#: includes/hooks.php:75
-msgid "Use live environment"
-msgstr "Käytä tuotantoympäristöä"
+#~ msgid "payment completed"
+#~ msgstr "maksu on valmis"
 
-#: includes/hooks.php:80
-msgid "MerchantId*"
-msgstr "Kauppiastunnus"
+#~ msgid "Use live environment"
+#~ msgstr "Käytä tuotantoympäristöä"
 
-#: includes/hooks.php:85
-msgid "Merchant secret*"
-msgstr "Kauppiasavain"
+#~ msgid "MerchantId*"
+#~ msgstr "Kauppiastunnus"
 
-#: includes/hooks.php:90
-msgid "Purchase country*"
-msgstr "Maa"
+#~ msgid "Merchant secret*"
+#~ msgstr "Kauppiasavain"
 
-#: includes/hooks.php:101
-msgid "Submerchant reference"
-msgstr "Jälleenmyyjän tunniste"
+#~ msgid "Purchase country*"
+#~ msgstr "Maa"
 
-#: includes/hooks.php:105
-msgid "Tax class"
-msgstr "Veroluokka"
+#~ msgid "Submerchant reference"
+#~ msgstr "Jälleenmyyjän tunniste"
 
-#: includes/hooks.php:116
-msgid "Service group"
-msgstr "Palveluluokka"
-
-#: includes/hooks.php:128
-msgid "Instant payment"
-msgstr "Nopea maksaminen"
-
-#: includes/hooks.php:140
-msgid "Maximum payment allowed*"
-msgstr "Suurin sallittu maksu"
+#~ msgid "Maximum payment allowed*"
+#~ msgstr "Suurin sallittu maksu"
