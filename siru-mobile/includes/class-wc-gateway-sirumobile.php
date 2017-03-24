@@ -171,50 +171,22 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         }
     }
 
+    /**
+     * Handles payment notification sent by Siru.
+     */
     public function callbackHandler()
     {
-        $signature = $this->getSignature();
 
         $entityBody = file_get_contents('php://input');
         $entityBodyAsJson = json_decode($entityBody, true);
+
         if(is_array($entityBodyAsJson) && isset($entityBodyAsJson['siru_event'])) {
 
-            if($signature->isNotificationAuthentic($entityBodyAsJson)) {
+            require_once ABSPATH . 'wp-content/plugins/siru-mobile/includes/class-wc-gateway-sirumobile-response.php';
+            $response = new WC_Gateway_Sirumobile_Response($this->getSignature());
 
-                $order_id = $entityBodyAsJson['purchaseReference'];
-                $order  = wc_get_order($order_id);
-                $uuid = $entityBodyAsJson['uuid'];
-
-                // Notification was sent by Siru Mobile and is authentic
-                if ($order->has_status( 'completed')) {
-                    self::log(sprintf('Received %s notification for completed order %s. Ignoring.', $entityBodyAsJson['siru_event'], $order_id));
-                    return;
-                } else {
-                    self::log(sprintf('Received %s notification for order %s.', $entityBodyAsJson['siru_event'], $order_id));
-                }
-
-                switch($entityBodyAsJson['siru_event']) {
-                    case 'success':
-                        $order->payment_complete($uuid);
-                        break;
-
-                    case 'canceled':
-                        break;
-
-                    case 'failure':
-                        $order->update_status('failed', $uuid);
-                        break;
-                }
-
-                
-            } else {
-                self::log(sprintf('Received %s notification with invalid or missing signature.', $entityBodyAsJson['siru_event']));
-            }
+            $response->handleNotify($entityBodyAsJson);
         }
-
-        error_log('no data for callback');
-
-#            wp_die( 'Callback failed', 'Siru Mobile', array( 'response' => 500 ) );
     }
 
     /**
@@ -345,7 +317,6 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     public function process_payment($order_id)
     {
-        global $woocommerce;
 
         $order = wc_get_order($order_id);
 
@@ -359,26 +330,27 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         try {
 
-            $url = $woocommerce->cart->get_checkout_url();
+            $url = WC()->cart->get_checkout_url();
+            $notifyUrl = WC()->api_request_url('WC_Gateway_Sirumobile');
 
             $total = $order->get_total();
             $total = number_format($total, 2);
 
             $purchaseCountry = esc_attr( $this->get_option( 'purchase_country', 'FI' ) );
             $taxClass = (int)esc_attr( $this->get_option( 'tax_class' ) );
+            $customerReference = $order->customer_user > 0 ? $order->customer_user : '';
 
             // Siru variant2 requires price w/o VAT
             // To avoid decimal errors, deduct VAT from total instead of using $order->get_subtotal()
             // @todo what if VAT percentages change?
-            $taxPercentages = array(1 => 0.1, 2 => 0.14, 3 => 0.24);
-            if(isset($taxPercentages[$taxClass]) == true) {
-                $total = bcdiv($total, $taxPercentages[$taxClass] + 1, 2);
+            if(isset(self::$tax_classes[$taxClass]) == true && self::$tax_classes[$taxClass] > 0) {
+                $total = bcdiv($total, (self::$tax_classes[$taxClass] / 100) + 1, 2);
             }
 
             $serviceGroup = esc_attr( $this->get_option( 'service_group' ) );
             $instantPay = $this->get_option('instantpay', 'yes') === 'yes' ? 1: 0;
 
-            // notifyAfter should be WC()->api_request_url('WC_Gateway_Sirumobile')
+            // Create transaction to Siru API
             $transaction = $api->getPaymentApi()
                 ->set('variant', 'variant2')
                 ->set('purchaseCountry', $purchaseCountry)
@@ -386,6 +358,9 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 ->set('redirectAfterSuccess',  $this->get_return_url( $order ))
                 ->set('redirectAfterFailure', $url)
                 ->set('redirectAfterCancel', $url)
+                ->set('notifyAfterSuccess', $notifyUrl)
+                ->set('notifyAfterFailure', $notifyUrl)
+                ->set('notifyAfterCancel', $notifyUrl)
                 ->set('taxClass', $taxClass)
                 ->set('serviceGroup', $serviceGroup)
                 ->set('instantPay', $instantPay)
@@ -394,6 +369,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 ->set('customerEmail', $order->billing_email)
                 ->set('customerLocale', get_locale())
                 ->set('purchaseReference', $order->id)
+                ->set('customerReference', $customerReference)
                 ->createPayment();
 
             return array(
@@ -403,17 +379,23 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         } catch (\Siru\Exception\InvalidResponseException $e) {
             self::log('InvalidResponseException: Unable to contact payment API. Check credentials.');
+       #     wc_add_notice( 'Unable to connect to the payment gateway, please try again.', 'error' );
 
         } catch (\Siru\Exception\ApiException $e) {
             self::log('ApiException: Failed to create transaction. ' . implode(" ", $e->getErrorStack()));
+       #     wc_add_notice( 'An error occured while starting mobile payment, please try again.', 'error' );
         }
 
-        return;
+        return array(
+            'result'    => 'fail',
+            'redirect'  => ''
+        );
     }
 
 
     /**
      * Output for the order received page.
+     * @todo  what if signature is not valid or updating order fails??
      */
     public function thankyou_page($order_id)
     {
@@ -421,22 +403,10 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $signature = $this->getSignature();
 
         if(isset($_GET['siru_event']) == true) {
-            if($signature->isNotificationAuthentic($_GET)) {
-                if($_GET['siru_event'] == 'success') {
+            require_once ABSPATH . 'wp-content/plugins/siru-mobile/includes/class-wc-gateway-sirumobile-response.php';
+            $response = new WC_Gateway_Sirumobile_Response($this->getSignature());
 
-                    $order = wc_get_order($order_id);
-
-                    // Mark as completed
-                    $order->update_status( 'completed', __( 'payment completed', 'siru-mobile' ) );
-
-                    // Reduce stock levels
-                    $order->reduce_order_stock();
-
-                    // Remove cart
-                    WC()->cart->empty_cart();
-
-                }
-            }
+            $response->handleRequest($_GET);
         }
 
         if ($this->instructions) {
