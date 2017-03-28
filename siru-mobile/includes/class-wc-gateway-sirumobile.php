@@ -148,13 +148,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             return $cache[$ip];
         }
 
-        $signature = $this->getSignature();
-        $api = new \Siru\API($signature);
-
-        // Use sandbox endpoint if configured by admin
-        if($this->get_option('sandbox', 'yes') === 'yes'){
-            $api->useStagingEndpoint();
-        }
+        $api = $this->getSiruAPI();
 
         try {
             $allowed = $api->getFeaturePhoneApi()->isFeaturePhoneIP($ip);
@@ -275,7 +269,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 'title' => __('Purchase country', 'siru-mobile'),
                 'type' => 'select',
                 'options' => array(
-                    'FI' => 'Finland'
+                    'FI' => __('Finland', 'woocommerce')
                 ),
                 'default' => 'FI'
             ),
@@ -289,10 +283,10 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 'title' => __('Service group', 'siru-mobile'),
                 'type' => 'select',
                 'options' => array(
-                    '1' => __('Non-profit services'),
-                    '2' => __('Online services'),
-                    '3' => __('Entertainment services'),
-                    '4' => __('Adult entertainment services'),
+                    '1' => __('Non-profit services', 'siru-mobile'),
+                    '2' => __('Online services', 'siru-mobile'),
+                    '3' => __('Entertainment services', 'siru-mobile'),
+                    '4' => __('Adult entertainment services', 'siru-mobile'),
                 ),
                 'default' => 2
             ),
@@ -320,13 +314,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         $order = wc_get_order($order_id);
 
-        $signature = $this->getSignature();
-        $api = new \Siru\API($signature);
-
-        // Use sandbox endpoint if configured by admin
-        if($this->get_option('sandbox', 'yes') === 'yes'){
-            $api->useStagingEndpoint();
-        }
+        $api = $this->getSiruAPI();
 
         try {
 
@@ -439,6 +427,22 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $secret = esc_attr( $this->get_option( 'merchant_secret' ) );
 
         return new \Siru\Signature($merchantId, $secret);
+    }
+
+    /**
+     * @return \Siru\API
+     */
+    private function getSiruAPI()
+    {
+        $signature = $this->getSignature();
+        $api = new \Siru\API($signature);
+
+        // Use sandbox endpoint if configured by admin
+        if($this->get_option('sandbox', 'yes') === 'yes'){
+            $api->useStagingEndpoint();
+        }
+
+        return $api;
     }
 
 }
