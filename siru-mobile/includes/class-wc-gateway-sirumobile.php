@@ -25,17 +25,6 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 {
 
     /**
-     * Array that maps Siru tax class codes to tax percentages.
-     * @var array
-     */
-    public static $tax_classes = array(
-        0 => 0,
-        1 => 10,
-        2 => 14,
-        3 => 24
-    );
-
-    /**
      * @var WC_Logger Logger
      */
     public static $log = false;
@@ -197,112 +186,11 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     }
 
     /**
-     * Returns default value for Siru Tax class based on Woocommerce base tax rates.
-     * @param  integer $default
-     * @return integer
-     */
-    private function get_base_tax_class($default = 3)
-    {
-        foreach(WC_Tax::get_base_tax_rates() as $rate) {
-            $key = array_search((int) $rate['rate'], self::$tax_classes);
-            if($key !== false) return $key;
-        }
-
-        return $default;
-    }
-
-    /**
      * Configures payment gateway admin section.
      */
     public function init_form_fields()
     {
-        $tax_classes = self::$tax_classes;
-        foreach($tax_classes as &$percentage) {
-            $percentage = "{$percentage}%";
-        }
-        unset($percentage);
-
-        $this->form_fields = array(
-
-            'enabled' => array(
-                'title' => __('Enable/Disable', 'woocommerce'),
-                'type' => 'checkbox',
-                'label' => __('Enable SiruMobile Payment', 'siru-mobile'),
-                'desc_tip'    => true,
-                'default' => 'no'
-            ),
-
-            'title' => array(
-                'title' => __('Title', 'woocommerce'),
-                'type' => 'text',
-                'placeholder' => __('Siru Mobile', 'siru-mobile')
-            ),
-            'description' => array(
-                'title' => __('Description', 'woocommerce'),
-                'type' => 'text',
-                'placeholder' => __('Pay using your mobile phone.', 'siru-mobile')
-            ),
-
-            'sandbox' => array(
-                'title' => __('Sandbox', 'siru-mobile'),
-                'type' => 'checkbox',
-                'label' => __('Use Siru Mobile sandbox environment.', 'siru-mobile'),
-                'description'    => __('Sandbox environment is for testing mobile payments without actually charging the user. Remember that you may need separate credentials for sandbox and production endpoints.', 'siru-mobile'),
-                'default' => 'yes'
-            ),
-            'merchant_id' => array(
-                'title' => __('Merchant Id', 'siru-mobile'),
-                'type' => 'text',
-                'description' => __('REQUIRED: Your merchantId provided by Siru Mobile', 'siru-mobile')
-            ),
-            'merchant_secret' => array(
-                'title' => __('Merchant secret', 'siru-mobile'),
-                'type' => 'text',
-                'description' => __('REQUIRED: Your merchant secret provided by Siru Mobile', 'siru-mobile')
-            ),
-            'submerchant_reference' => array(
-                'title' => __('Sub-merchant reference', 'siru-mobile'),
-                'type' => 'text',
-                'desc_tip' => __('Optional store identifier if you have more than one store using the same merchantId.', 'siru-mobile')
-            ),
-            'purchase_country' => array(
-                'title' => __('Purchase country', 'siru-mobile'),
-                'type' => 'select',
-                'options' => array(
-                    'FI' => __('Finland', 'woocommerce')
-                ),
-                'default' => 'FI'
-            ),
-            'tax_class' => array(
-                'title' => __('Tax class', 'siru-mobile'),
-                'type' => 'select',
-                'options' => $tax_classes,
-                'default' => $this->get_base_tax_class()
-            ),
-            'service_group' => array(
-                'title' => __('Service group', 'siru-mobile'),
-                'type' => 'select',
-                'options' => array(
-                    '1' => __('Non-profit services', 'siru-mobile'),
-                    '2' => __('Online services', 'siru-mobile'),
-                    '3' => __('Entertainment services', 'siru-mobile'),
-                    '4' => __('Adult entertainment services', 'siru-mobile'),
-                ),
-                'default' => 2
-            ),
-            'instantpay' => array(
-                'title' => __('Instant payment', 'siru-mobile'),
-                'type' => 'checkbox',
-                'label' => __('Use fast checkout process', 'siru-mobile'),
-                'default' => 'yes'
-            ),
-            'maximum_payment' => array(
-                'title' => __('Maximum payment allowed', 'siru-mobile'),
-                'type' => 'text',
-                'desc_tip' => __('Maximum payment amount available for mobile payments.', 'siru-mobile'),
-                'default' => 60
-            ),
-        );
+        $this->form_fields = include( ABSPATH . 'wp-content/plugins/siru-mobile/includes/settings-sirumobile.php' );
     }
 
     /**
@@ -313,7 +201,6 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     {
 
         $order = wc_get_order($order_id);
-
         $api = $this->getSiruAPI();
 
         try {
@@ -321,28 +208,20 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             $url = WC()->cart->get_checkout_url();
             $notifyUrl = WC()->api_request_url('WC_Gateway_Sirumobile');
 
-            $total = $order->get_total();
-            $total = number_format($total, 2);
-
             $purchaseCountry = esc_attr( $this->get_option( 'purchase_country', 'FI' ) );
             $taxClass = (int)esc_attr( $this->get_option( 'tax_class' ) );
-            $customerReference = $order->customer_user > 0 ? $order->customer_user : '';
-
-            // Siru variant2 requires price w/o VAT
-            // To avoid decimal errors, deduct VAT from total instead of using $order->get_subtotal()
-            // @todo what if VAT percentages change?
-            if(isset(self::$tax_classes[$taxClass]) == true && self::$tax_classes[$taxClass] > 0) {
-                $total = bcdiv($total, (self::$tax_classes[$taxClass] / 100) + 1, 2);
-            }
-
             $serviceGroup = esc_attr( $this->get_option( 'service_group' ) );
             $instantPay = $this->get_option('instantpay', 'yes') === 'yes' ? 1: 0;
+            $customerReference = $order->customer_user > 0 ? $order->customer_user : '';
+            $basePrice = $this->calculateBasePrice($order);
+
+            //@Todo should we block siru if cart has items where tax class differs from select tax class
 
             // Create transaction to Siru API
             $transaction = $api->getPaymentApi()
                 ->set('variant', 'variant2')
                 ->set('purchaseCountry', $purchaseCountry)
-                ->set('basePrice', $total)
+                ->set('basePrice', $basePrice)
                 ->set('redirectAfterSuccess',  $this->get_return_url( $order ))
                 ->set('redirectAfterFailure', $url)
                 ->set('redirectAfterCancel', $url)
@@ -359,6 +238,10 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 ->set('purchaseReference', $order->id)
                 ->set('customerReference', $customerReference)
                 ->createPayment();
+
+            // Store Siru UUID to order
+            add_post_meta($order_id, '_siru_uuid', $transaction['uuid']);
+            $order->add_order_note(sprintf(__('New Siru Mobile transaction %s', 'siru-mobile'), $transaction['uuid']));
 
             return array(
                 'result' => 'success',
@@ -380,6 +263,18 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         );
     }
 
+    /**
+     * Returns basePrice for Siru API which requires price without VAT.
+     * @param  WC_Abstract_Order $order
+     * @return float
+     */
+    private function calculateBasePrice(WC_Abstract_Order $order)
+    {
+        $total = $order->get_subtotal();
+        $total = number_format($total, 2);
+
+        return $total;
+    }
 
     /**
      * Output for the order received page.
