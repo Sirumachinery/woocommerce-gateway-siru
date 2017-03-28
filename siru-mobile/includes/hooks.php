@@ -33,6 +33,6 @@ function wc_gateway_sirumobile_theme_localized( $locale ) {
  */
 add_action('plugins_loaded', 'wc_gateway_sirumobile_load_language', 12);
 function wc_gateway_sirumobile_load_language(){
-    $path = 'siru-mobile/lang';
+    $path = 'siru-mobile/languages';
     load_plugin_textdomain('siru-mobile', false, $path);
 }

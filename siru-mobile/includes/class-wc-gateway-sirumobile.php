@@ -48,7 +48,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $this->id = 'siru';
         $this->method_title = 'Siru Mobile';
         $this->method_description = __('Enable payments by mobile phone. A new transaction is created using Siru Mobile payment gateway where user is redirected to confirm payment. Payments are charged in users mobile phone bill. Mobile payment is only available in Finland when using mobile internet connection.', 'siru-mobile');
-        $this->icon = '';
+        $this->icon = apply_filters( 'woocommerce_sirumobile_icon', plugins_url('siru-mobile') . '/assets/sirumobile-logo.png' );
         $this->has_field = false;
 
         // Set maximum payment amount allowed for mobile payments
@@ -165,7 +165,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         if(is_array($entityBodyAsJson) && isset($entityBodyAsJson['siru_event'])) {
 
-            require_once ABSPATH . 'wp-content/plugins/siru-mobile/includes/class-wc-gateway-sirumobile-response.php';
+            require_once WP_PLUGIN_DIR . '/siru-mobile/includes/class-wc-gateway-sirumobile-response.php';
             $response = new WC_Gateway_Sirumobile_Response($this->getSignature());
 
             $response->handleNotify($entityBodyAsJson);
@@ -190,7 +190,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     public function init_form_fields()
     {
-        $this->form_fields = include( ABSPATH . 'wp-content/plugins/siru-mobile/includes/settings-sirumobile.php' );
+        $this->form_fields = include( WP_PLUGIN_DIR . '/siru-mobile/includes/settings-sirumobile.php' );
     }
 
     /**
@@ -286,7 +286,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $signature = $this->getSignature();
 
         if(isset($_GET['siru_event']) == true) {
-            require_once ABSPATH . 'wp-content/plugins/siru-mobile/includes/class-wc-gateway-sirumobile-response.php';
+            require_once WP_PLUGIN_DIR . '/siru-mobile/includes/class-wc-gateway-sirumobile-response.php';
             $response = new WC_Gateway_Sirumobile_Response($this->getSignature());
 
             $response->handleRequest($_GET);
