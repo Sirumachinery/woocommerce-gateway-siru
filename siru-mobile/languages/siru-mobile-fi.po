@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Siru Woocommerce Plugin\n"
-"POT-Creation-Date: 2017-03-29 13:27+0300\n"
-"PO-Revision-Date: 2017-03-29 13:28+0300\n"
+"POT-Creation-Date: 2017-03-29 16:12+0300\n"
+"PO-Revision-Date: 2017-03-29 16:13+0300\n"
 "Last-Translator: \n"
 "Language-Team: Siru Mobile <dev@sirumobile.com>\n"
 "Language: fi_FI\n"
@@ -72,22 +72,22 @@ msgid "Description"
 msgstr "Kuvaus"
 
 #: includes/settings-sirumobile.php:32
-msgid "Sandbox"
-msgstr "Hiekkalaatikko"
+msgid "Test mode"
+msgstr "Testitila"
 
 #: includes/settings-sirumobile.php:34
-msgid "Use Siru Mobile sandbox environment."
-msgstr "Käytä Siru Mobilen testiympäristöä"
+msgid "Use Siru Mobile staging environment."
+msgstr "Käytä Siru Mobile staging ympäristöä."
 
 #: includes/settings-sirumobile.php:35
 msgid ""
-"Sandbox environment is for testing mobile payments without actually charging "
-"the user. Remember that you may need separate credentials for sandbox and "
+"Staging environment is for testing mobile payments without actually charging "
+"the user. Remember that you may need separate credentials for staging and "
 "production endpoints."
 msgstr ""
-"Testiympäristö eli hiekkalaatikko on tarkoitettu maksujen testaamiseen ilman "
-"että käyttäjää veloitetaan. Muista että saatat tarvita erilliset tunnukset "
-"kun siirryt käyttämään tuotantoympäristöä."
+"Staging ympäristö on tarkoitettu mobiilimaksujen testaamiseen ilman oikeita "
+"veloituksia. Muista että saatat tarvita erilliset tunnukset staging ja "
+"tuotantoympäristöön."
 
 #: includes/settings-sirumobile.php:42
 #, php-format
@@ -205,9 +205,24 @@ msgstr ""
 "Suurin sallittu summa mobiilimaksuille. Mikäli ostoskorin arvo ylittää tämän "
 "summan, mobiilimaksaminen ei ole käytettävissä."
 
-#: siru-mobile.php:53
+#: siru-mobile.php:72
 msgid "Settings"
 msgstr "Asetukset"
+
+#~ msgid "Sandbox"
+#~ msgstr "Hiekkalaatikko"
+
+#~ msgid "Use Siru Mobile sandbox environment."
+#~ msgstr "Käytä Siru Mobilen testiympäristöä"
+
+#~ msgid ""
+#~ "Sandbox environment is for testing mobile payments without actually "
+#~ "charging the user. Remember that you may need separate credentials for "
+#~ "sandbox and production endpoints."
+#~ msgstr ""
+#~ "Testiympäristö eli hiekkalaatikko on tarkoitettu maksujen testaamiseen "
+#~ "ilman että käyttäjää veloitetaan. Muista että saatat tarvita erilliset "
+#~ "tunnukset kun siirryt käyttämään tuotantoympäristöä."
 
 #~ msgid "payment completed"
 #~ msgstr "maksu on valmis"

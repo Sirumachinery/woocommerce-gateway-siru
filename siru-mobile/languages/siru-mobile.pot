@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Siru Woocommerce Plugin\n"
-"POT-Creation-Date: 2017-03-29 13:29+0300\n"
+"POT-Creation-Date: 2017-03-29 16:11+0300\n"
 "PO-Revision-Date: 2017-03-23 13:17+0200\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -67,17 +67,17 @@ msgid "Description"
 msgstr ""
 
 #: includes/settings-sirumobile.php:32
-msgid "Sandbox"
+msgid "Test mode"
 msgstr ""
 
 #: includes/settings-sirumobile.php:34
-msgid "Use Siru Mobile sandbox environment."
+msgid "Use Siru Mobile staging environment."
 msgstr ""
 
 #: includes/settings-sirumobile.php:35
 msgid ""
-"Sandbox environment is for testing mobile payments without actually charging "
-"the user. Remember that you may need separate credentials for sandbox and "
+"Staging environment is for testing mobile payments without actually charging "
+"the user. Remember that you may need separate credentials for staging and "
 "production endpoints."
 msgstr ""
 
@@ -187,6 +187,6 @@ msgstr ""
 msgid "Maximum payment amount available for mobile payments."
 msgstr ""
 
-#: siru-mobile.php:53
+#: siru-mobile.php:72
 msgid "Settings"
 msgstr ""
