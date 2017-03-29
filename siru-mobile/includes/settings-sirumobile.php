@@ -35,6 +35,13 @@ return array(
         'description'    => __('Sandbox environment is for testing mobile payments without actually charging the user. Remember that you may need separate credentials for sandbox and production endpoints.', 'siru-mobile'),
         'default' => 'yes'
     ),
+    'log_enabled' => array(
+        'title' => __( 'Debug Log', 'woocommerce' ),
+        'type' => 'checkbox',
+        'label' => __('Enable logging', 'woocommerce'),
+        'description'    => sprintf(__('Log payment events to <code>%s</code>.', 'siru-mobile'), wc_get_log_file_path('siru')),
+        'default' => 'yes'
+    ),
     'merchant_id' => array(
         'title' => __('Merchant Id', 'siru-mobile'),
         'type' => 'text',

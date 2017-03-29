@@ -27,7 +27,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     /**
      * @var boolean
      */
-    public static $log_enabled = true;
+    public static $log_enabled = false;
 
     /**
      * Instruction text that would be shown in receipt page.
@@ -47,6 +47,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $this->method_description = __('Enable payments by mobile phone. A new transaction is created using Siru Mobile payment gateway where user is redirected to confirm payment. Payments are charged in users mobile phone bill. Mobile payment is only available in Finland when using mobile internet connection.', 'siru-mobile');
         $this->icon = apply_filters( 'woocommerce_sirumobile_icon', plugins_url('siru-mobile') . '/assets/sirumobile-logo.png' );
         $this->has_field = false;
+        self::$log_enabled = ($this->get_option('log_enabled', 'yes') == 'yes');
 
         // Set maximum payment amount allowed for mobile payments
         $this->max_amount = number_format((float) $this->get_option('maximum_payment'), 2);
@@ -239,6 +240,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             // Store Siru UUID to order
             add_post_meta($order_id, '_siru_uuid', $transaction['uuid']);
             $order->add_order_note(sprintf(__('New Siru Mobile transaction %s', 'siru-mobile'), $transaction['uuid']));
+
+            self::log(sprintf('Created new pending payment for order %s. UUID %s.', $order_id, $transaction['uuid']));
 
             return array(
                 'result' => 'success',

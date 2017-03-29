@@ -1,14 +1,14 @@
 <?php
-/*
-Plugin Name: Siru Mobile
-Plugin URI: https://github.com/Sirumachinery/siru-woocommerce-plugin
-Description: Siru Mobile Payment
-Version: 0.1
-Author: Siru Mobile
-Author URI: https://sirumobile.com
-License: MIT
-Text Domain: siru-mobile
-*/
+/**
+ * Plugin Name: Siru Mobile
+ * Plugin URI: https://github.com/Sirumachinery/siru-woocommerce-plugin
+ * Description: Siru Mobile Payment
+ * Version: 0.1
+ * Author: Siru Mobile
+ * Author URI: https://sirumobile.com
+ * License: MIT
+ * Text Domain: siru-mobile
+ */
 
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
