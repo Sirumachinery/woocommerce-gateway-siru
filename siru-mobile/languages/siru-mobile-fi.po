@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Siru Woocommerce Plugin\n"
-"POT-Creation-Date: 2017-03-29 10:21+0300\n"
-"PO-Revision-Date: 2017-03-29 10:28+0300\n"
+"POT-Creation-Date: 2017-03-29 13:27+0300\n"
+"PO-Revision-Date: 2017-03-29 13:28+0300\n"
 "Last-Translator: \n"
 "Language-Team: Siru Mobile <dev@sirumobile.com>\n"
 "Language: fi_FI\n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "Canceled by user"
 msgstr "Käyttäjä keskeytti"
 
-#: includes/class-wc-gateway-sirumobile.php:50
+#: includes/class-wc-gateway-sirumobile.php:47
 msgid ""
 "Enable payments by mobile phone. A new transaction is created using Siru "
 "Mobile payment gateway where user is redirected to confirm payment. Payments "
@@ -32,36 +32,32 @@ msgstr ""
 "käyttäjän matkapuhelinlaskulla. Mobiilimaksaminen on käytössä vain "
 "Suomalaisista mobiili-internet liittymistä."
 
-#: includes/class-wc-gateway-sirumobile.php:58
+#: includes/class-wc-gateway-sirumobile.php:56
 msgid "Continue to payment"
 msgstr "Siirry maksamaan"
 
-#: includes/class-wc-gateway-sirumobile.php:64
+#: includes/class-wc-gateway-sirumobile.php:62
 #: includes/settings-sirumobile.php:23
 msgid "Siru Mobile"
 msgstr "Siru Mobile"
 
-#: includes/class-wc-gateway-sirumobile.php:65
+#: includes/class-wc-gateway-sirumobile.php:63
 #: includes/settings-sirumobile.php:28
 msgid "Pay using your mobile phone."
 msgstr "Maksa matkapuhelimellasi"
 
-#: includes/class-wc-gateway-sirumobile.php:119
+#: includes/class-wc-gateway-sirumobile.php:117
 msgid "Gateway Disabled"
 msgstr "Maksutapa ei ole käytössä"
 
-#: includes/class-wc-gateway-sirumobile.php:119
+#: includes/class-wc-gateway-sirumobile.php:117
 msgid "Siru mobile payments are not available in your store currency."
 msgstr "Siru mobiilimaksaminen ei ole saatavilla kauppasi valuutalle."
 
-#: includes/class-wc-gateway-sirumobile.php:244
+#: includes/class-wc-gateway-sirumobile.php:242
 #, php-format
 msgid "New Siru Mobile transaction %s"
 msgstr "Uusi Siru Mobile maksutapahtuma %s"
-
-#: includes/hooks.php:11
-msgid "Settings"
-msgstr "Asetukset"
 
 #: includes/settings-sirumobile.php:15
 msgid "Enable SiruMobile Payment"
@@ -93,27 +89,32 @@ msgstr ""
 "että käyttäjää veloitetaan. Muista että saatat tarvita erilliset tunnukset "
 "kun siirryt käyttämään tuotantoympäristöä."
 
-#: includes/settings-sirumobile.php:39
+#: includes/settings-sirumobile.php:42
+#, php-format
+msgid "Log payment events to <code>%s</code>."
+msgstr "Tallenna maksutapahtumat ja virheet lokiin <code>%s</code>."
+
+#: includes/settings-sirumobile.php:46
 msgid "Merchant Id"
 msgstr "Kauppiastunnus"
 
-#: includes/settings-sirumobile.php:41
+#: includes/settings-sirumobile.php:48
 msgid "REQUIRED: Your merchantId provided by Siru Mobile"
 msgstr "PAKOLLINEN: Anna kauppiastunnus jonka olet saanut Siru Mobilelta"
 
-#: includes/settings-sirumobile.php:44
+#: includes/settings-sirumobile.php:51
 msgid "Merchant secret"
 msgstr "Kauppiasavain"
 
-#: includes/settings-sirumobile.php:46
+#: includes/settings-sirumobile.php:53
 msgid "REQUIRED: Your merchant secret provided by Siru Mobile"
 msgstr "PAKOLLINEN: Anna kauppiasavain jonka olet saanut Siru Mobilelta"
 
-#: includes/settings-sirumobile.php:49
+#: includes/settings-sirumobile.php:56
 msgid "Sub-merchant reference"
 msgstr "Jälleenmyyjän tunniste"
 
-#: includes/settings-sirumobile.php:51
+#: includes/settings-sirumobile.php:58
 msgid ""
 "Optional store identifier if you have more than one store using the same "
 "merchantId."
@@ -121,15 +122,15 @@ msgstr ""
 "Jos käytät samaa kauppiastunnusta useassa verkkokaupassa, voit eritellä "
 "maksut antamalla joka kaupalle oman tunnisteen."
 
-#: includes/settings-sirumobile.php:54
+#: includes/settings-sirumobile.php:61
 msgid "Purchase country"
 msgstr "Maa"
 
-#: includes/settings-sirumobile.php:62
+#: includes/settings-sirumobile.php:69
 msgid "Tax class"
 msgstr "Veroluokka"
 
-#: includes/settings-sirumobile.php:64
+#: includes/settings-sirumobile.php:71
 msgid ""
 "The VAT class sent to mobile operator. You can only select one tax class for "
 "mobile payments. Tax class 3 is the general rate, classes 1 and 2 are "
@@ -140,27 +141,27 @@ msgstr ""
 "mobiilimaksuissa. Veroluokka 3 on yleinen verokanta. Luokat 1 ja 2 ovat "
 "alennettuja verokantoja. Lisätietoja saat Siru Mobile API dokumentaatiosta."
 
-#: includes/settings-sirumobile.php:66
+#: includes/settings-sirumobile.php:73
 msgid "no tax"
 msgstr "veroton"
 
-#: includes/settings-sirumobile.php:67
+#: includes/settings-sirumobile.php:74
 msgid "tax class 1"
 msgstr "Veroluokka 1"
 
-#: includes/settings-sirumobile.php:68
+#: includes/settings-sirumobile.php:75
 msgid "tax class 2"
 msgstr "Veroluokka 2"
 
-#: includes/settings-sirumobile.php:69
+#: includes/settings-sirumobile.php:76
 msgid "tax class 3"
 msgstr "Veroluokka 3"
 
-#: includes/settings-sirumobile.php:74
+#: includes/settings-sirumobile.php:81
 msgid "Service group"
 msgstr "Palveluluokka"
 
-#: includes/settings-sirumobile.php:76
+#: includes/settings-sirumobile.php:83
 msgid ""
 "The Finnish Communications Regulatory Authority requires paid phone services "
 "to be categorized into service groups. A customer's phone subscription may "
@@ -170,39 +171,43 @@ msgstr ""
 "Viestintäviraston määräämiin palveluluokkiin. Loppukäyttäjä on voinut sopia "
 "tiettyjen palveluluokkien estosta operaattorinsa kanssa."
 
-#: includes/settings-sirumobile.php:78
+#: includes/settings-sirumobile.php:85
 msgid "Non-profit services"
 msgstr "Yleishyödylliset palvelut"
 
-#: includes/settings-sirumobile.php:79
+#: includes/settings-sirumobile.php:86
 msgid "Online services"
 msgstr "Asiointipalvelut"
 
-#: includes/settings-sirumobile.php:80
+#: includes/settings-sirumobile.php:87
 msgid "Entertainment services"
 msgstr "Ajanvietepalvelut"
 
-#: includes/settings-sirumobile.php:81
+#: includes/settings-sirumobile.php:88
 msgid "Adult entertainment services"
 msgstr "Aikuisviihdepalvelut"
 
-#: includes/settings-sirumobile.php:86
+#: includes/settings-sirumobile.php:93
 msgid "Instant payment"
 msgstr "Nopea maksaminen"
 
-#: includes/settings-sirumobile.php:88
+#: includes/settings-sirumobile.php:95
 msgid "Use fast checkout process"
 msgstr "Käytä nopeaa maksuprosessia (suositus)"
 
-#: includes/settings-sirumobile.php:92
+#: includes/settings-sirumobile.php:99
 msgid "Maximum payment allowed"
 msgstr "Suurin sallittu maksu"
 
-#: includes/settings-sirumobile.php:94
+#: includes/settings-sirumobile.php:101
 msgid "Maximum payment amount available for mobile payments."
 msgstr ""
 "Suurin sallittu summa mobiilimaksuille. Mikäli ostoskorin arvo ylittää tämän "
 "summan, mobiilimaksaminen ei ole käytettävissä."
+
+#: siru-mobile.php:53
+msgid "Settings"
+msgstr "Asetukset"
 
 #~ msgid "payment completed"
 #~ msgstr "maksu on valmis"

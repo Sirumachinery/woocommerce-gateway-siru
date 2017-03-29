@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Siru Woocommerce Plugin\n"
-"POT-Creation-Date: 2017-03-29 10:28+0300\n"
+"POT-Creation-Date: 2017-03-29 13:29+0300\n"
 "PO-Revision-Date: 2017-03-23 13:17+0200\n"
 "Last-Translator: \n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -19,7 +19,7 @@ msgstr ""
 msgid "Canceled by user"
 msgstr ""
 
-#: includes/class-wc-gateway-sirumobile.php:50
+#: includes/class-wc-gateway-sirumobile.php:47
 msgid ""
 "Enable payments by mobile phone. A new transaction is created using Siru "
 "Mobile payment gateway where user is redirected to confirm payment. Payments "
@@ -27,35 +27,31 @@ msgid ""
 "Finland when using mobile internet connection."
 msgstr ""
 
-#: includes/class-wc-gateway-sirumobile.php:58
+#: includes/class-wc-gateway-sirumobile.php:56
 msgid "Continue to payment"
 msgstr ""
 
-#: includes/class-wc-gateway-sirumobile.php:64
+#: includes/class-wc-gateway-sirumobile.php:62
 #: includes/settings-sirumobile.php:23
 msgid "Siru Mobile"
 msgstr ""
 
-#: includes/class-wc-gateway-sirumobile.php:65
+#: includes/class-wc-gateway-sirumobile.php:63
 #: includes/settings-sirumobile.php:28
 msgid "Pay using your mobile phone."
 msgstr ""
 
-#: includes/class-wc-gateway-sirumobile.php:119
+#: includes/class-wc-gateway-sirumobile.php:117
 msgid "Gateway Disabled"
 msgstr ""
 
-#: includes/class-wc-gateway-sirumobile.php:119
+#: includes/class-wc-gateway-sirumobile.php:117
 msgid "Siru mobile payments are not available in your store currency."
 msgstr ""
 
-#: includes/class-wc-gateway-sirumobile.php:244
+#: includes/class-wc-gateway-sirumobile.php:242
 #, php-format
 msgid "New Siru Mobile transaction %s"
-msgstr ""
-
-#: includes/hooks.php:11
-msgid "Settings"
 msgstr ""
 
 #: includes/settings-sirumobile.php:15
@@ -85,41 +81,46 @@ msgid ""
 "production endpoints."
 msgstr ""
 
-#: includes/settings-sirumobile.php:39
-msgid "Merchant Id"
-msgstr ""
-
-#: includes/settings-sirumobile.php:41
-msgid "REQUIRED: Your merchantId provided by Siru Mobile"
-msgstr ""
-
-#: includes/settings-sirumobile.php:44
-msgid "Merchant secret"
+#: includes/settings-sirumobile.php:42
+#, php-format
+msgid "Log payment events to <code>%s</code>."
 msgstr ""
 
 #: includes/settings-sirumobile.php:46
-msgid "REQUIRED: Your merchant secret provided by Siru Mobile"
+msgid "Merchant Id"
 msgstr ""
 
-#: includes/settings-sirumobile.php:49
-msgid "Sub-merchant reference"
+#: includes/settings-sirumobile.php:48
+msgid "REQUIRED: Your merchantId provided by Siru Mobile"
 msgstr ""
 
 #: includes/settings-sirumobile.php:51
+msgid "Merchant secret"
+msgstr ""
+
+#: includes/settings-sirumobile.php:53
+msgid "REQUIRED: Your merchant secret provided by Siru Mobile"
+msgstr ""
+
+#: includes/settings-sirumobile.php:56
+msgid "Sub-merchant reference"
+msgstr ""
+
+#: includes/settings-sirumobile.php:58
 msgid ""
 "Optional store identifier if you have more than one store using the same "
 "merchantId."
 msgstr ""
 
-#: includes/settings-sirumobile.php:54
+#: includes/settings-sirumobile.php:61
 msgid "Purchase country"
 msgstr ""
 
-#: includes/settings-sirumobile.php:62
+#: includes/settings-sirumobile.php:69
 msgid "Tax class"
 msgstr ""
 
-#: includes/settings-sirumobile.php:64
+#: includes/settings-sirumobile.php:71
 msgid ""
 "The VAT class sent to mobile operator. You can only select one tax class for "
 "mobile payments. Tax class 3 is the general rate, classes 1 and 2 are "
@@ -127,61 +128,65 @@ msgid ""
 "documentation."
 msgstr ""
 
-#: includes/settings-sirumobile.php:66
+#: includes/settings-sirumobile.php:73
 msgid "no tax"
 msgstr ""
 
-#: includes/settings-sirumobile.php:67
+#: includes/settings-sirumobile.php:74
 msgid "tax class 1"
 msgstr ""
 
-#: includes/settings-sirumobile.php:68
+#: includes/settings-sirumobile.php:75
 msgid "tax class 2"
 msgstr ""
 
-#: includes/settings-sirumobile.php:69
+#: includes/settings-sirumobile.php:76
 msgid "tax class 3"
 msgstr ""
 
-#: includes/settings-sirumobile.php:74
+#: includes/settings-sirumobile.php:81
 msgid "Service group"
 msgstr ""
 
-#: includes/settings-sirumobile.php:76
+#: includes/settings-sirumobile.php:83
 msgid ""
 "The Finnish Communications Regulatory Authority requires paid phone services "
 "to be categorized into service groups. A customer's phone subscription may "
 "bar calls to certain service groups."
 msgstr ""
 
-#: includes/settings-sirumobile.php:78
+#: includes/settings-sirumobile.php:85
 msgid "Non-profit services"
 msgstr ""
 
-#: includes/settings-sirumobile.php:79
+#: includes/settings-sirumobile.php:86
 msgid "Online services"
 msgstr ""
 
-#: includes/settings-sirumobile.php:80
+#: includes/settings-sirumobile.php:87
 msgid "Entertainment services"
 msgstr ""
 
-#: includes/settings-sirumobile.php:81
+#: includes/settings-sirumobile.php:88
 msgid "Adult entertainment services"
 msgstr ""
 
-#: includes/settings-sirumobile.php:86
+#: includes/settings-sirumobile.php:93
 msgid "Instant payment"
 msgstr ""
 
-#: includes/settings-sirumobile.php:88
+#: includes/settings-sirumobile.php:95
 msgid "Use fast checkout process"
 msgstr ""
 
-#: includes/settings-sirumobile.php:92
+#: includes/settings-sirumobile.php:99
 msgid "Maximum payment allowed"
 msgstr ""
 
-#: includes/settings-sirumobile.php:94
+#: includes/settings-sirumobile.php:101
 msgid "Maximum payment amount available for mobile payments."
+msgstr ""
+
+#: siru-mobile.php:53
+msgid "Settings"
 msgstr ""
