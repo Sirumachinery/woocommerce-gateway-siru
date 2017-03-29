@@ -29,10 +29,10 @@ return array(
     ),
 
     'sandbox' => array(
-        'title' => __('Sandbox', 'siru-mobile'),
+        'title' => __('Test mode', 'siru-mobile'),
         'type' => 'checkbox',
-        'label' => __('Use Siru Mobile sandbox environment.', 'siru-mobile'),
-        'description'    => __('Sandbox environment is for testing mobile payments without actually charging the user. Remember that you may need separate credentials for sandbox and production endpoints.', 'siru-mobile'),
+        'label' => __('Use Siru Mobile staging environment.', 'siru-mobile'),
+        'description'    => __('Staging environment is for testing mobile payments without actually charging the user. Remember that you may need separate credentials for staging and production endpoints.', 'siru-mobile'),
         'default' => 'yes'
     ),
     'log_enabled' => array(
