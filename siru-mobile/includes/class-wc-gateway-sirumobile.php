@@ -5,13 +5,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-require_once(ABSPATH . '/wp-content/plugins/siru-mobile/vendor/autoload.php');
-
-if (session_id() == '')
-    session_start();
-
-
-
 /**
  * Gateway class for Siru Mobile payments.
  * 
@@ -23,6 +16,8 @@ if (session_id() == '')
  */
 class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 {
+
+    const TRANSIENT_CACHE_ID = 'wc_siru_ip_check';
 
     /**
      * @var WC_Logger Logger
@@ -45,6 +40,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     public function __construct()
     {
+        require_once(WP_PLUGIN_DIR . '/siru-mobile/vendor/autoload.php');
+
         $this->id = 'siru';
         $this->method_title = 'Siru Mobile';
         $this->method_description = __('Enable payments by mobile phone. A new transaction is created using Siru Mobile payment gateway where user is redirected to confirm payment. Payments are charged in users mobile phone bill. Mobile payment is only available in Finland when using mobile internet connection.', 'siru-mobile');
@@ -130,9 +127,9 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     {
         $ip = WC_Geolocation::get_ip_address();
 
-        $cache = (array) get_transient('wc_siru_ip_check');
+        $cache = (array) get_transient(self::TRANSIENT_CACHE_ID);
 
-        // We keep IP verification results in session to avoid API call on each pageload
+        // We keep IP verification results in cache to avoid API call on each pageload
         if(isset($cache[$ip])) {
             return $cache[$ip];
         }
@@ -144,7 +141,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
             // Cache result for one houre
             $cache[$ip] = $allowed;
-            set_transient('wc_siru_ip_check', $cache, 3600);
+            set_transient(self::TRANSIENT_CACHE_ID, $cache, 3600);
 
             return $allowed;
 
