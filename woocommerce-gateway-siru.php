@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Siru Mobile
- * Plugin URI: https://github.com/Sirumachinery/siru-woocommerce-plugin
+ * Plugin URI: https://github.com/Sirumachinery/woocommerce-gateway-siru
  * Description: Siru Mobile Payment
  * Version: 0.1.0
  * Author: Siru Mobile
@@ -82,7 +82,7 @@ add_action('plugins_loaded', 'wc_gateway_sirumobile_load_language', 12);
 function wc_gateway_sirumobile_load_language() {
     $plugin_base = basename( dirname( __FILE__ ) );
     $path = $plugin_base . '/languages';
-    load_plugin_textdomain($plugin_base, false, $path);
+    load_plugin_textdomain('siru-mobile', false, $path);
 }
 
 /**

@@ -36,16 +36,25 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     private $instructions = '';
 
     /**
+     * Plugin directory name.
+     * @var string
+     */
+    public static $base_name;
+
+    /**
      * Constructor.
      */
     public function __construct()
     {
-        require_once(WP_PLUGIN_DIR . '/siru-mobile/vendor/autoload.php');
+        self::$base_name = basename(dirname(dirname( __FILE__ )));
+
+        require_once(WP_PLUGIN_DIR . '/' . self::$base_name . '/vendor/autoload.php');
 
         $this->id = 'siru';
         $this->method_title = 'Siru Mobile';
         $this->method_description = __('Enable payments by mobile phone. A new transaction is created using Siru Mobile payment gateway where user is redirected to confirm payment. Payments are charged in users mobile phone bill. Mobile payment is only available in Finland when using mobile internet connection.', 'siru-mobile');
-        $this->icon = apply_filters( 'woocommerce_sirumobile_icon', plugins_url('siru-mobile') . '/assets/sirumobile-logo.png' );
+
+        $this->icon = apply_filters( 'woocommerce_sirumobile_icon', plugins_url(self::$base_name) . '/assets/sirumobile-logo.png' );
         $this->has_field = false;
         self::$log_enabled = ($this->get_option('log_enabled', 'yes') == 'yes');
 
@@ -163,7 +172,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         if(is_array($entityBodyAsJson) && isset($entityBodyAsJson['siru_event'])) {
 
-            require_once WP_PLUGIN_DIR . '/siru-mobile/includes/class-wc-gateway-sirumobile-response.php';
+            require_once WP_PLUGIN_DIR . '/' . self::$base_name . '/includes/class-wc-gateway-sirumobile-response.php';
             $response = new WC_Gateway_Sirumobile_Response($this->getSignature());
 
             $response->handleNotify($entityBodyAsJson);
@@ -188,7 +197,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     public function init_form_fields()
     {
-        $this->form_fields = include( WP_PLUGIN_DIR . '/siru-mobile/includes/settings-sirumobile.php' );
+        $this->form_fields = include( WP_PLUGIN_DIR . '/' . self::$base_name . '/includes/settings-sirumobile.php' );
     }
 
     /**
@@ -286,7 +295,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $signature = $this->getSignature();
 
         if(isset($_GET['siru_event']) == true) {
-            require_once WP_PLUGIN_DIR . '/siru-mobile/includes/class-wc-gateway-sirumobile-response.php';
+            require_once WP_PLUGIN_DIR . '/' . self::$base_name . '/includes/class-wc-gateway-sirumobile-response.php';
             $response = new WC_Gateway_Sirumobile_Response($this->getSignature());
 
             $response->handleRequest($_GET);
