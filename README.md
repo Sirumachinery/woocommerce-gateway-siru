@@ -2,7 +2,7 @@
 
 This plugin provides mobile payments in Finland using Direct carrier billing through Siru Mobile.
 
-## Description
+## Features
 
 * Easy to install
 * Supports mobile payments through any Finnish mobile subscription
@@ -12,12 +12,12 @@ This plugin provides mobile payments in Finland using Direct carrier billing thr
 
 ## Requirements
 
-* Woocommerce 2.6
+* WooCommerce 2.6
 * API credentials from Siru Mobile
 * Payment gateway is only available in Finland and supports EUR as currency
 
 ## Installation
 
-* Copy the siru-mobile folder to Wordpress plugins directory /wp-content/plugins/
+* Either unpack the archive to Wordpress plugins directory /wp-content/plugins/ or upload archive at wp-admin/plugin-install.php?tab=upload
 * Go to Plugins menu in WordPress Administration to activate the plugin
 * Go to WooCommerce --> Settings --> Checkout --> Siru Mobile and configure your Siru Mobile settings.
