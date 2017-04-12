@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
  * 
  * @class       WC_Gateway_Sirumobile
  * @extends     WC_Payment_Gateway
- * @version     0.1.1
+ * @version     0.1.2
  * @package     SiruMobile
  * @author      Siru Mobile
  */
