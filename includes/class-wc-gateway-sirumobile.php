@@ -279,8 +279,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     private function calculateBasePrice(WC_Abstract_Order $order)
     {
-        $total = $order->get_subtotal();
-        $total = number_format($total, 2);
+        $total = $order->get_total() - $order->get_total_tax();
+        $total = number_format($total, 2, '.', '');
 
         return $total;
     }
