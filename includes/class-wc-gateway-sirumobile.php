@@ -344,6 +344,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         // Use sandbox endpoint if configured by admin
         if($this->get_option('sandbox', 'yes') === 'yes'){
             $api->useStagingEndpoint();
+        } else {
+            $api->useProductionEndpoint();
         }
 
         return $api;
