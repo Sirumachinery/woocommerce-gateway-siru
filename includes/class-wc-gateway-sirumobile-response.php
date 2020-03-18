@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Takes Siru data that was passed to redirectAfter* or notifyAfter* URL and updates order accordingly.
  */
-class WC_Gateway_Sirumobile_Response {
+class WC_Gateway_Sirumobile_Response
+{
 
     /**
      * @var \Siru\Signature
@@ -20,7 +22,7 @@ class WC_Gateway_Sirumobile_Response {
     /**
      * Takes Siru GET parameters at redirectAfter* URL and updates order accordingly.
      * @param  array  $data
-     * @return boolean False on error
+     * @return bool False on error
      */
     public function handleRequest(array $data)
     {
@@ -31,13 +33,13 @@ class WC_Gateway_Sirumobile_Response {
      * Takes Siru JSON data at notifyAfter* URL and updates order accordingly.
      * On error, HTTP 500 response is sent.
      * @param  array  $data
-     * @return boolean Always true
+     * @return bool Always true
      */
     public function handleNotify(array $data)
     {
         $success = $this->updateOrder($data, 'notification', $errorstr);
 
-        if($success == false) {
+        if($success === false) {
             wp_die($errorstr, null, array( 'response' => 500 ) );
         }
 
@@ -50,18 +52,18 @@ class WC_Gateway_Sirumobile_Response {
         $order_id = $data['siru_purchaseReference'];
         $uuid = $data['siru_uuid'];
 
-        if($this->signature->isNotificationAuthentic($data) == false) {
-            WC_Gateway_Sirumobile::log(sprintf('Received %s %s for order %s with invalid or missing signature.', $event, $from, $order_id));
+        if($this->signature->isNotificationAuthentic($data) === false) {
+            WC_Gateway_Sirumobile::log(sprintf('Received %s %s for order %s with invalid or missing signature.', $event, $from, $order_id), 'warning');
             $errorstr = 'Invalid notification';
             return false;
         }
 
         // Notification was sent by Siru Mobile and is authentic
         try {
-            $order  = wc_get_order($order_id);
+            $order = wc_get_order($order_id);
 
             WC_Gateway_Sirumobile::log(sprintf('Received %s %s for order %s (%s).', $event, $from, $order->get_id(), $order->get_status()));
-            if ($order->has_status( 'completed')) {
+            if ($order->has_status( array('processing', 'completed') )) {
                 return true;
             }
 
@@ -71,7 +73,7 @@ class WC_Gateway_Sirumobile_Response {
                     break;
 
                 case 'cancel':
-                    $order->cancel_order(__('Canceled by user'));
+                    $order->update_status( 'cancelled', __('Canceled by user') );
                     break;
 
                 case 'failure':
@@ -85,7 +87,9 @@ class WC_Gateway_Sirumobile_Response {
                 get_class($e),
                 $from,
                 $order_id,
-                $event));
+                $event),
+                'error'
+            );
             $errorstr = 'Failed to update order';
             return false;
         }

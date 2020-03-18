@@ -44,7 +44,7 @@ return array(
     ),
     'merchant_id' => array(
         'title' => __('Merchant Id', 'siru-mobile'),
-        'type' => 'text',
+        'type' => 'number',
         'description' => __('REQUIRED: Your merchantId provided by Siru Mobile', 'siru-mobile')
     ),
     'merchant_secret' => array(

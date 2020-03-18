@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
  * 
  * @class       WC_Gateway_Sirumobile
  * @extends     WC_Payment_Gateway
- * @version     0.1.2
+ * @version     0.2.0
  * @package     SiruMobile
  * @author      Siru Mobile
  */
@@ -25,7 +25,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     public static $log = false;
 
     /**
-     * @var boolean
+     * @var bool
      */
     public static $log_enabled = false;
 
@@ -85,22 +85,32 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     }
 
     /**
-     * Returns wether or not Siru payments are available.
-     * @return boolean
+     * @inheritDoc
+     */
+    public function needs_setup()
+    {
+        $merchantId = trim($this->get_option('merchant_id'));
+        if (is_numeric($merchantId) === false) {
+            return true;
+        }
+
+        $secret = trim($this->get_option('merchant_secret'));
+        if(empty($secret) === true) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @inheritDoc
      */
     public function is_available()
     {
-        if($this->enabled === 'no') {
-            return false;
-        }
-
-        $merchantId = trim(esc_attr($this->get_option('merchant_id')));
-        $secret = trim(esc_attr($this->get_option('merchant_secret')));
-        if(empty($merchantId) == true || empty($secret) == true) {
-            return false;
-        }
-
         if(parent::is_available() == false) {
+            return false;
+        }
+
+        if ($this->needs_setup() === true) {
             return false;
         }
 
@@ -110,9 +120,19 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     /**
      * Checks if plugin is available in select currency.
      * @return bool
+     * @todo should we block siru if cart has items where tax class differs from select tax class
+     * @todo should we block siru if cart uses more than one tax class
      */
-    public function is_valid_for_use() {
-        return in_array(get_woocommerce_currency(), apply_filters('woocommerce_paypal_supported_currencies', array('EUR')));
+    public function is_valid_for_use()
+    {
+        return in_array(
+            get_woocommerce_currency(),
+            apply_filters(
+                'woocommerce_siru_supported_currencies',
+                array( 'EUR' )
+            ),
+            true
+        );
     }
 
     /**
@@ -123,7 +143,11 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             parent::admin_options();
         } else {
             ?>
-            <div class="inline error"><p><strong><?php _e( 'Gateway Disabled', 'woocommerce' ); ?></strong>: <?php _e( 'Siru mobile payments are not available in your store currency.', 'siru-mobile' ); ?></p></div>
+            <div class="inline error">
+                <p>
+                    <strong><?php esc_html_e( 'Gateway disabled', 'woocommerce' ); ?></strong>: <?php esc_html_e( 'Siru mobile payments are not available in your store currency.', 'siru-mobile' ); ?>
+                </p>
+            </div>
             <?php
         }
     }
@@ -131,7 +155,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     /**
      * Checks from Siru API if mobile payments are available for end users IP-address.
      * Results are cached for one hour.
-     * @return boolean
+     * @return bool
      */
     private function isIpAllowed()
     {
@@ -155,7 +179,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
             return $allowed;
 
-        } catch (\Siru\Exception\AbstractApiException $e) {
+        } catch (\Exception $e) {
             self::log(sprintf('ApiException: Unable to verify if %s is allowed to use mobile payments. %s', $ip, $e->getMessage()));
             return true;
         }
@@ -179,15 +203,17 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     }
 
     /**
-     * Logs message
+     * Logs message.
      * @param string $message
+     * @param string $level
      */
-    public static function log( $message ) {
+    public static function log( $message, $level = 'info' )
+    {
         if ( self::$log_enabled ) {
             if ( empty( self::$log ) ) {
-                self::$log = new WC_Logger();
+                self::$log = wc_get_logger();
             }
-            self::$log->add( 'siru', $message );
+            self::$log->log( $level, $message, array( 'source' => 'siru' ) );
         }
     }
 
@@ -219,8 +245,6 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             $serviceGroup = esc_attr( $this->get_option( 'service_group' ) );
             $customerReference = $order->get_customer_id() > 0 ? $order->get_customer_id() : '';
             $basePrice = $this->calculateBasePrice($order);
-
-            //@Todo should we block siru if cart has items where tax class differs from select tax class
 
             // Create transaction to Siru API
             $transaction = $api->getPaymentApi()
@@ -255,11 +279,11 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             );
 
         } catch (\Siru\Exception\InvalidResponseException $e) {
-            self::log('InvalidResponseException: Unable to contact payment API. Check credentials.');
+            self::log('InvalidResponseException: Unable to contact payment API. Check credentials.', 'error');
        #     wc_add_notice( 'Unable to connect to the payment gateway, please try again.', 'error' );
 
         } catch (\Siru\Exception\ApiException $e) {
-            self::log('ApiException: Failed to create transaction. ' . implode(" ", $e->getErrorStack()));
+            self::log('ApiException: Failed to create transaction. ' . implode(" ", $e->getErrorStack()), 'error');
        #     wc_add_notice( 'An error occured while starting mobile payment, please try again.', 'error' );
         }
 
@@ -289,9 +313,6 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     public function thankyou_page($order_id)
     {
-
-        $signature = $this->getSignature();
-
         if(isset($_GET['siru_event']) === true) {
             require_once WP_PLUGIN_DIR . '/' . self::$base_name . '/includes/class-wc-gateway-sirumobile-response.php';
             $response = new WC_Gateway_Sirumobile_Response($this->getSignature());
