@@ -89,16 +89,11 @@ return array(
         ),
         'default' => 2
     ),
-    'instantpay' => array(
-        'title' => __('Instant payment', 'siru-mobile'),
-        'type' => 'checkbox',
-        'label' => __('Use fast checkout process', 'siru-mobile'),
-        'default' => 'yes'
-    ),
     'maximum_payment' => array(
         'title' => __('Maximum payment allowed', 'siru-mobile'),
         'type' => 'text',
         'desc_tip' => __('Maximum payment amount available for mobile payments.', 'siru-mobile'),
         'default' => 60
     ),
+
 );

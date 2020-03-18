@@ -60,7 +60,7 @@ class WC_Gateway_Sirumobile_Response {
         try {
             $order  = wc_get_order($order_id);
 
-            WC_Gateway_Sirumobile::log(sprintf('Received %s %s for order %s (%s).', $event, $from, $order->id, $order->get_status()));
+            WC_Gateway_Sirumobile::log(sprintf('Received %s %s for order %s (%s).', $event, $from, $order->get_id(), $order->get_status()));
             if ($order->has_status( 'completed')) {
                 return true;
             }

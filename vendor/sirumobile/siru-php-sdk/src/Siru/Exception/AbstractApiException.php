@@ -5,7 +5,7 @@ abstract class AbstractApiException extends \Exception {
 
     private $responseBody = false;
 
-    public function __construct($message = '', $code = 0, \Exception $e = null, $body ='')
+    public function __construct($message = '', $code = 0, \Exception $e = null, $body = '')
     {
         parent::__construct($message, $code, $e);
 

@@ -2,6 +2,7 @@
 namespace Siru\API;
 
 use Siru\Exception\ApiException;
+use Siru\Exception\InvalidResponseException;
 
 /**
  * API for checking if given IP-address is allowed to use variant2 mobile payments.
@@ -11,8 +12,9 @@ class FeaturePhone extends AbstractAPI {
     /**
      * @param  string  $ip IPv4 address
      * @return boolean     True if variant2 payments are possible from this IP-address
-     * @throws Siru\Exception\InvalidResponseException
-     * @throws Siru\Exception\ApiException
+     * @throws InvalidResponseException
+     * @throws ApiException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function isFeaturePhoneIP($ip)
     {

@@ -2,6 +2,7 @@
 namespace Siru\API;
 
 use Siru\Exception\ApiException;
+use Siru\Exception\InvalidResponseException;
 
 /**
  * Siru Price calculation API methods.
@@ -19,8 +20,9 @@ class Price extends AbstractAPI {
      * @param  string      $variant              Variant, usually variant1 which is default
      * @param  int         $merchantId           MerchantId. If empty, merchantId from signature is used
      * @return string
-     * @throws Siru\Exception\InvalidResponseException
-     * @throws Siru\Exception\ApiException
+     * @throws InvalidResponseException
+     * @throws ApiException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function calculatePrice($purchaseCountry, $basePrice, $submerchantReference = null, $taxClass = null, $variant = 'variant1', $merchantId = null)
     {

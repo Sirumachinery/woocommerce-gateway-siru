@@ -131,7 +131,7 @@ class Signature {
     /**
      * Validates response signature received from Siru API.
      * 
-     * The fields are sent as GET parameters when user is redrected back to your site.
+     * The fields are sent as GET parameters when user is redirected back to your site.
      * If you provided notifyAfter* URLs, the fields are in message body as JSON object.
      * Remember to convert JSON object to array before passing to this method.
      * 

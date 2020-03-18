@@ -55,8 +55,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $this->method_description = __('Enable payments by mobile phone. A new transaction is created using Siru Mobile payment gateway where user is redirected to confirm payment. Payments are charged in users mobile phone bill. Mobile payment is only available in Finland when using mobile internet connection.', 'siru-mobile');
 
         $this->icon = apply_filters( 'woocommerce_sirumobile_icon', plugins_url(self::$base_name) . '/assets/sirumobile-logo.png' );
-        $this->has_field = false;
-        self::$log_enabled = ($this->get_option('log_enabled', 'yes') == 'yes');
+        $this->has_fields = false;
+        self::$log_enabled = ($this->get_option('log_enabled', 'yes') === 'yes');
 
         // Set maximum payment amount allowed for mobile payments
         $this->max_amount = number_format((float) $this->get_option('maximum_payment'), 2);
@@ -155,7 +155,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
             return $allowed;
 
-        } catch (\Siru\Exception\ApiException $e) {
+        } catch (\Siru\Exception\AbstractApiException $e) {
             self::log(sprintf('ApiException: Unable to verify if %s is allowed to use mobile payments. %s', $ip, $e->getMessage()));
             return true;
         }
@@ -166,7 +166,6 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     public function callbackHandler()
     {
-
         $entityBody = file_get_contents('php://input');
         $entityBodyAsJson = json_decode($entityBody, true);
 
@@ -212,14 +211,13 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         try {
 
-            $url = WC()->cart->get_checkout_url();
+            $url = wc_get_checkout_url();
             $notifyUrl = WC()->api_request_url('WC_Gateway_Sirumobile');
 
             $purchaseCountry = esc_attr( $this->get_option( 'purchase_country', 'FI' ) );
             $taxClass = (int)esc_attr( $this->get_option( 'tax_class' ) );
             $serviceGroup = esc_attr( $this->get_option( 'service_group' ) );
-            $instantPay = $this->get_option('instantpay', 'yes') === 'yes' ? 1: 0;
-            $customerReference = $order->customer_user > 0 ? $order->customer_user : '';
+            $customerReference = $order->get_customer_id() > 0 ? $order->get_customer_id() : '';
             $basePrice = $this->calculateBasePrice($order);
 
             //@Todo should we block siru if cart has items where tax class differs from select tax class
@@ -237,12 +235,11 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 ->set('notifyAfterCancel', $notifyUrl)
                 ->set('taxClass', $taxClass)
                 ->set('serviceGroup', $serviceGroup)
-                ->set('instantPay', $instantPay)
-                ->set('customerFirstName', $order->billing_first_name)
-                ->set('customerLastName', $order->billing_last_name)
-                ->set('customerEmail', $order->billing_email)
+                ->set('customerFirstName', $order->get_billing_first_name())
+                ->set('customerLastName', $order->get_billing_last_name())
+                ->set('customerEmail', $order->get_billing_email())
                 ->set('customerLocale', get_locale())
-                ->set('purchaseReference', $order->id)
+                ->set('purchaseReference', $order->get_id())
                 ->set('customerReference', $customerReference)
                 ->createPayment();
 
@@ -288,13 +285,14 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     /**
      * Output for the order received page.
      * @todo  what if signature is not valid or updating order fails??
+     * @param $order_id
      */
     public function thankyou_page($order_id)
     {
 
         $signature = $this->getSignature();
 
-        if(isset($_GET['siru_event']) == true) {
+        if(isset($_GET['siru_event']) === true) {
             require_once WP_PLUGIN_DIR . '/' . self::$base_name . '/includes/class-wc-gateway-sirumobile-response.php';
             $response = new WC_Gateway_Sirumobile_Response($this->getSignature());
 
@@ -316,7 +314,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     public function email_instructions($order, $sent_to_admin, $plain_text = false)
     {
-        if ($this->instructions && !$sent_to_admin && 'siru' === $order->payment_method && $order->is_paid()) {
+        if ($this->instructions && !$sent_to_admin && 'siru' === $order->get_payment_method() && $order->is_paid()) {
             echo wpautop(wptexturize($this->instructions)) . PHP_EOL;
         }
     }
