@@ -30,7 +30,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     public static $log_enabled = false;
 
     /**
-     * Instruction text that would be shown in receipt page.
+     * Instruction text that would be shown in receipt page and in receipt emails.
      * @var string
      */
     private $instructions = '';
@@ -226,8 +226,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     }
 
     /**
-     * @param int $order_id
-     * @return array
+     * @inheritDoc
      */
     public function process_payment($order_id)
     {
@@ -296,18 +295,19 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     /**
      * Returns basePrice for Siru API which requires price without VAT.
      * @param  WC_Abstract_Order $order
-     * @return float
+     * @return string
      */
     private function calculateBasePrice(WC_Abstract_Order $order)
     {
         $total = $order->get_total() - $order->get_total_tax();
-        $total = number_format($total, 2, '.', '');
-
-        return $total;
+        return number_format($total, 2, '.', '');
     }
 
     /**
-     * Output for the order received page.
+     * Action which is called when user arrives to thank you -page.
+     * We use it to verify query parameters from Siru and possibly add
+     * some message on the page about Siru payments.
+     *
      * @todo  what if signature is not valid or updating order fails??
      * @param $order_id
      */
@@ -326,20 +326,16 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     }
 
     /**
-     * Add content to the WC emails.
-     *
-     * @access public
-     * @param WC_Order $order
-     * @param bool $sent_to_admin
-     * @param bool $plain_text
+     * Unused for now. This could be used to add some message regarding siru payment method to emails.
+     * @see WC_Gateway_BACS::email_instructions()
      */
-    public function email_instructions($order, $sent_to_admin, $plain_text = false)
+/*    public function email_instructions( $order, $sent_to_admin, $plain_text = false )
     {
         if ($this->instructions && !$sent_to_admin && 'siru' === $order->get_payment_method() && $order->is_paid()) {
             echo wpautop(wptexturize($this->instructions)) . PHP_EOL;
         }
     }
-
+*/
     /**
      * Creates instance of \Siru\Signature using merchant id and secret from settings.
      * @return \Siru\Signature

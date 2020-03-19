@@ -73,7 +73,7 @@ class WC_Gateway_Sirumobile_Response
                     break;
 
                 case 'cancel':
-                    $order->update_status( 'cancelled', __('Canceled by user') );
+                    $order->update_status( 'cancelled' );
                     break;
 
                 case 'failure':
