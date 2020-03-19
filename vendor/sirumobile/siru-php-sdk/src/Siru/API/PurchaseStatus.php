@@ -1,9 +1,10 @@
 <?php
 namespace Siru\API;
 
-use Siru\Exception\ApiException;
 use DateTime;
 use DateTimeZone;
+use Siru\Exception\ApiException;
+use Siru\Exception\InvalidResponseException;
 
 /**
  * Siru purchase status API methods.
@@ -19,9 +20,13 @@ class PurchaseStatus extends AbstractAPI {
      * Array
      * (
      *     [uuid] => 88a0f51b-e6aa-41f2-8663-4a0112990a7c
+     *     [submerchantReference] => null
+     *     [customerReference] => null
+     *     [purchaseReference] => testshop1420070765
      *     [status] => confirmed
      *     [basePrice] => 5.00
      *     [finalPrice] => 7.50
+     *     [currency] => EUR
      *     [createdAt] => 2017-02-08T12:41:45+0000
      *     [startedAt] => 2017-02-08T12:42:00+0000
      *     [finishedAt] => 2017-02-08T12:42:09+0000
@@ -30,8 +35,9 @@ class PurchaseStatus extends AbstractAPI {
      * 
      * @param  string $uuid Uuid received from Payment API
      * @return array        Single purchase details as an array
-     * @throws Siru\Exception\InvalidResponseException
-     * @throws Siru\Exception\ApiException
+     * @throws InvalidResponseException
+     * @throws ApiException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function findPurchaseByUuid($uuid)
     {
@@ -52,9 +58,13 @@ class PurchaseStatus extends AbstractAPI {
      *     [0] => Array
      *         (
      *             [uuid] => 88a0f51b-e6aa-41f2-8663-4a0112990a7c
+     *             [submerchantReference] => null
+     *             [customerReference] => null
+     *             [purchaseReference] => testshop1420070765
      *             [status] => confirmed
      *             [basePrice] => 5.00
      *             [finalPrice] => 7.50
+     *             [currency] => EUR
      *             [createdAt] => 2017-02-08T12:41:45+0000
      *             [startedAt] => 2017-02-08T12:42:00+0000
      *             [finishedAt] => 2017-02-08T12:42:09+0000
@@ -65,8 +75,9 @@ class PurchaseStatus extends AbstractAPI {
      * @param  string      $purchaseReference    Purchase reference sent to API
      * @param  string|null $submerchantReference Optional submerchantReference
      * @return array
-     * @throws Siru\Exception\InvalidResponseException
-     * @throws Siru\Exception\ApiException
+     * @throws InvalidResponseException
+     * @throws ApiException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function findPurchasesByReference($purchaseReference, $submerchantReference = null)
     {
@@ -109,8 +120,9 @@ class PurchaseStatus extends AbstractAPI {
      * @param  DateTime $from  Lower date limit. Purchases with this datetime or higher will be included in the result.
      * @param  DateTime $to    Upper date limit. Purchases created before this datetime are included in the result.
      * @return array
-     * @throws Siru\Exception\InvalidResponseException
-     * @throws Siru\Exception\ApiException
+     * @throws InvalidResponseException
+     * @throws ApiException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function findPurchasesByDateRange(DateTime $from, DateTime $to)
     {
@@ -136,7 +148,9 @@ class PurchaseStatus extends AbstractAPI {
      * 
      * @param  int    $httpStatus
      * @param  string $body
-     * @return array|stdClass
+     * @return array
+     * @throws InvalidResponseException
+     * @throws ApiException
      */
     private function parseResponse($httpStatus, $body)
     {
@@ -153,7 +167,7 @@ class PurchaseStatus extends AbstractAPI {
      * Creates an exception if error has occured.
      * 
      * @param  int            $httpStatus
-     * @param  array|stdClass $json
+     * @param  array          $json
      * @param  string         $body
      * @return ApiException
      */

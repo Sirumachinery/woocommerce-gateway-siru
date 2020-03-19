@@ -1,6 +1,15 @@
 <?php
 namespace Siru;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
+use Siru\API\FeaturePhone;
+use Siru\API\Kyc;
+use Siru\API\OperationalStatus;
+use Siru\API\Payment;
+use Siru\API\Price;
+use Siru\API\PurchaseStatus;
+
 /**
  * This class is used to create instances of different API objects which in turn are used to call different API methods.
  */
@@ -8,6 +17,11 @@ class API {
 
     const ENDPOINT_STAGING = 'https://staging.sirumobile.com';
     const ENDPOINT_PRODUCTION = 'https://payment.sirumobile.com';
+
+    /**
+     * @var ClientInterface|null
+     */
+    private $guzzleClient;
     
     /**
      * Signature creator.
@@ -44,9 +58,7 @@ class API {
      */
     public function useStagingEndpoint()
     {
-        $this->endPoint = self::ENDPOINT_STAGING;
-
-        return $this;
+        return $this->setEndpointUrl(self::ENDPOINT_STAGING);
     }
 
     /**
@@ -56,9 +68,19 @@ class API {
      */
     public function useProductionEndpoint()
     {
-        $this->endPoint = self::ENDPOINT_PRODUCTION;
+        return $this->setEndpointUrl(self::ENDPOINT_PRODUCTION);
+    }
+
+    public function setEndpointUrl($url)
+    {
+        $this->endPoint = $url;
 
         return $this;
+    }
+
+    public function getEndpointUrl()
+    {
+        return $this->endPoint;
     }
 
     /**
@@ -107,6 +129,28 @@ class API {
     }
 
     /**
+     * @return Client
+     */
+    public function getGuzzleClient()
+    {
+        if ($this->guzzleClient === null) {
+            $this->guzzleClient = new Client(['base_uri' => $this->endPoint, 'verify' => false]);
+        }
+        return $this->guzzleClient;
+    }
+
+    /**
+     * Sets guzzle client that will be used for API requests.
+     * Note that setting the client here will override selected endpoint URL.
+     *
+     * @param ClientInterface $client
+     */
+    public function setGuzzleClient(ClientInterface $client)
+    {
+        $this->guzzleClient = $client;
+    }
+
+    /**
      * Returns Payment API object.
      * All default values set using setDefaults() are automatically passed to Payment API object.
      * 
@@ -114,24 +158,35 @@ class API {
      */
     public function getPaymentApi()
     {
-        $api = new API\Payment($this->signature, $this->endPoint);
+        $api = new Payment($this->signature, $this->getGuzzleClient());
 
         array_walk($this->defaults, function($value, $key) use ($api) {
             $api->set($key, $value);
         });
 
         return $api;
-
     }
 
     /**
      * Returns Purchase status API object. Used for retrieving single payment status or search payments.
-     * 
+     *
      * @return PurchaseStatus
      */
     public function getPurchaseStatusApi()
     {
-        $api = new API\PurchaseStatus($this->signature, $this->endPoint);
+        $api = new PurchaseStatus($this->signature, $this->getGuzzleClient());
+
+        return $api;
+    }
+
+    /**
+     * Returns KYC API object. Used for KYC data of successful payments.
+     *
+     * @return Kyc
+     */
+    public function getKycApi()
+    {
+        $api = new Kyc($this->signature, $this->getGuzzleClient());
 
         return $api;
     }
@@ -143,7 +198,7 @@ class API {
      */
     public function getPriceApi()
     {
-        $api = new API\Price($this->signature, $this->endPoint);
+        $api = new Price($this->signature, $this->getGuzzleClient());
 
         return $api;
     }
@@ -155,7 +210,7 @@ class API {
      */
     public function getFeaturePhoneApi()
     {
-        $api = new API\FeaturePhone($this->signature, $this->endPoint);
+        $api = new FeaturePhone($this->signature, $this->getGuzzleClient());
 
         return $api;
     }
@@ -167,7 +222,7 @@ class API {
      */
     public function getOperationalStatusApi()
     {
-        $api = new API\OperationalStatus($this->signature, $this->endPoint);
+        $api = new OperationalStatus($this->signature, $this->getGuzzleClient());
 
         return $api;
     }

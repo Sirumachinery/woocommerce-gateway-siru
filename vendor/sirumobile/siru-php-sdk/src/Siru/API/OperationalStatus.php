@@ -14,6 +14,7 @@ class OperationalStatus extends AbstractAPI {
      * 500 There is a problem with Siru Mobile API.
      * 
      * @return int
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function check()
     {

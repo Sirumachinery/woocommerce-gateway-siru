@@ -6,11 +6,11 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Gateway class for Siru Mobile payments.
+ * Payment gateway class for Siru Mobile payments.
  * 
  * @class       WC_Gateway_Sirumobile
  * @extends     WC_Payment_Gateway
- * @version     0.1.2
+ * @version     1.0.0
  * @package     SiruMobile
  * @author      Siru Mobile
  */
@@ -25,15 +25,20 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     public static $log = false;
 
     /**
-     * @var boolean
+     * @var bool
      */
     public static $log_enabled = false;
 
     /**
-     * Instruction text that would be shown in receipt page.
+     * Instruction text that would be shown in receipt page and in receipt emails.
      * @var string
      */
     private $instructions = '';
+
+    /**
+     * @var array
+     */
+    public $countries = array('FI');
 
     /**
      * Plugin directory name.
@@ -55,8 +60,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $this->method_description = __('Enable payments by mobile phone. A new transaction is created using Siru Mobile payment gateway where user is redirected to confirm payment. Payments are charged in users mobile phone bill. Mobile payment is only available in Finland when using mobile internet connection.', 'siru-mobile');
 
         $this->icon = apply_filters( 'woocommerce_sirumobile_icon', plugins_url(self::$base_name) . '/assets/sirumobile-logo.png' );
-        $this->has_field = false;
-        self::$log_enabled = ($this->get_option('log_enabled', 'yes') == 'yes');
+        $this->has_fields = false;
+        self::$log_enabled = ($this->get_option('log_enabled', 'yes') === 'yes');
 
         // Set maximum payment amount allowed for mobile payments
         $this->max_amount = number_format((float) $this->get_option('maximum_payment'), 2);
@@ -85,34 +90,80 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     }
 
     /**
-     * Returns wether or not Siru payments are available.
-     * @return boolean
+     * @inheritDoc
+     */
+    public function needs_setup()
+    {
+        $merchantId = trim($this->get_option('merchant_id'));
+        if (is_numeric($merchantId) === false) {
+            return true;
+        }
+
+        $secret = trim($this->get_option('merchant_secret'));
+        if(empty($secret) === true) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @inheritDoc
      */
     public function is_available()
     {
-        if($this->enabled === 'no') {
+        if(parent::is_available() === false) {
+            self::log('Siru payment gateway is not enabled or cart total exceeds payment maximum amount. Hiding payment method from checkout.', 'debug');
             return false;
         }
 
-        $merchantId = trim(esc_attr($this->get_option('merchant_id')));
-        $secret = trim(esc_attr($this->get_option('merchant_secret')));
-        if(empty($merchantId) == true || empty($secret) == true) {
+        if ($this->needs_setup() === true) {
+            self::log('Siru payment gateway is not yet configured. Hiding payment method from checkout.', 'debug');
             return false;
         }
 
-        if(parent::is_available() == false) {
+        if ($this->doesCartContainMultipleTaxClasses() === true) {
+            self::log('It looks like cart contains multiple tax percentages. Hiding payment method from checkout.', 'debug');
             return false;
         }
 
-        return $this->isIpAllowed();
+        if ($this->isIpAllowed() === false) {
+            self::log('User is not currently using mobile internet connection. Hiding payment method from checkout.', 'debug');
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if cart items, fees or shipping contain multiple tax classes.
+     * Siru payment gateway supports only one tax class per payment.
+     *
+     * @return bool
+     */
+    private function doesCartContainMultipleTaxClasses()
+    {
+        $cart = WC()->cart;
+        if ($cart instanceof WC_Cart) {
+            return (count($cart->get_taxes()) > 1);
+        }
+        return false;
     }
 
     /**
      * Checks if plugin is available in select currency.
      * @return bool
+     * @todo should we block siru if cart has items where tax class differs from select tax class
+     * @todo should we block siru if cart uses more than one tax class
      */
-    public function is_valid_for_use() {
-        return in_array(get_woocommerce_currency(), apply_filters('woocommerce_paypal_supported_currencies', array('EUR')));
+    public function is_valid_for_use()
+    {
+        return in_array(
+            get_woocommerce_currency(),
+            apply_filters(
+                'woocommerce_siru_supported_currencies',
+                array( 'EUR' )
+            ),
+            true
+        );
     }
 
     /**
@@ -123,7 +174,11 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             parent::admin_options();
         } else {
             ?>
-            <div class="inline error"><p><strong><?php _e( 'Gateway Disabled', 'woocommerce' ); ?></strong>: <?php _e( 'Siru mobile payments are not available in your store currency.', 'siru-mobile' ); ?></p></div>
+            <div class="inline error">
+                <p>
+                    <strong><?php esc_html_e( 'Gateway disabled', 'woocommerce' ); ?></strong>: <?php esc_html_e( 'Siru mobile payments are not available in your store currency.', 'siru-mobile' ); ?>
+                </p>
+            </div>
             <?php
         }
     }
@@ -131,7 +186,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     /**
      * Checks from Siru API if mobile payments are available for end users IP-address.
      * Results are cached for one hour.
-     * @return boolean
+     * @return bool
      */
     private function isIpAllowed()
     {
@@ -155,7 +210,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
             return $allowed;
 
-        } catch (\Siru\Exception\ApiException $e) {
+        } catch (\Exception $e) {
             self::log(sprintf('ApiException: Unable to verify if %s is allowed to use mobile payments. %s', $ip, $e->getMessage()));
             return true;
         }
@@ -166,7 +221,6 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     public function callbackHandler()
     {
-
         $entityBody = file_get_contents('php://input');
         $entityBodyAsJson = json_decode($entityBody, true);
 
@@ -180,15 +234,17 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     }
 
     /**
-     * Logs message
+     * Logs message.
      * @param string $message
+     * @param string $level
      */
-    public static function log( $message ) {
+    public static function log( $message, $level = 'info' )
+    {
         if ( self::$log_enabled ) {
             if ( empty( self::$log ) ) {
-                self::$log = new WC_Logger();
+                self::$log = wc_get_logger();
             }
-            self::$log->add( 'siru', $message );
+            self::$log->log( $level, $message, array( 'source' => 'siru' ) );
         }
     }
 
@@ -201,8 +257,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     }
 
     /**
-     * @param int $order_id
-     * @return array
+     * @inheritDoc
      */
     public function process_payment($order_id)
     {
@@ -212,17 +267,14 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         try {
 
-            $url = WC()->cart->get_checkout_url();
+            $url = wc_get_checkout_url();
             $notifyUrl = WC()->api_request_url('WC_Gateway_Sirumobile');
 
             $purchaseCountry = esc_attr( $this->get_option( 'purchase_country', 'FI' ) );
             $taxClass = (int)esc_attr( $this->get_option( 'tax_class' ) );
             $serviceGroup = esc_attr( $this->get_option( 'service_group' ) );
-            $instantPay = $this->get_option('instantpay', 'yes') === 'yes' ? 1: 0;
-            $customerReference = $order->customer_user > 0 ? $order->customer_user : '';
+            $customerReference = $order->get_customer_id() > 0 ? $order->get_customer_id() : '';
             $basePrice = $this->calculateBasePrice($order);
-
-            //@Todo should we block siru if cart has items where tax class differs from select tax class
 
             // Create transaction to Siru API
             $transaction = $api->getPaymentApi()
@@ -237,12 +289,11 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 ->set('notifyAfterCancel', $notifyUrl)
                 ->set('taxClass', $taxClass)
                 ->set('serviceGroup', $serviceGroup)
-                ->set('instantPay', $instantPay)
-                ->set('customerFirstName', $order->billing_first_name)
-                ->set('customerLastName', $order->billing_last_name)
-                ->set('customerEmail', $order->billing_email)
+                ->set('customerFirstName', $order->get_billing_first_name())
+                ->set('customerLastName', $order->get_billing_last_name())
+                ->set('customerEmail', $order->get_billing_email())
                 ->set('customerLocale', get_locale())
-                ->set('purchaseReference', $order->id)
+                ->set('purchaseReference', $order->get_id())
                 ->set('customerReference', $customerReference)
                 ->createPayment();
 
@@ -258,11 +309,11 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             );
 
         } catch (\Siru\Exception\InvalidResponseException $e) {
-            self::log('InvalidResponseException: Unable to contact payment API. Check credentials.');
+            self::log('InvalidResponseException: Unable to contact payment API. Check credentials.', 'error');
        #     wc_add_notice( 'Unable to connect to the payment gateway, please try again.', 'error' );
 
         } catch (\Siru\Exception\ApiException $e) {
-            self::log('ApiException: Failed to create transaction. ' . implode(" ", $e->getErrorStack()));
+            self::log('ApiException: Failed to create transaction. ' . implode(" ", $e->getErrorStack()), 'error');
        #     wc_add_notice( 'An error occured while starting mobile payment, please try again.', 'error' );
         }
 
@@ -275,26 +326,25 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     /**
      * Returns basePrice for Siru API which requires price without VAT.
      * @param  WC_Abstract_Order $order
-     * @return float
+     * @return string
      */
     private function calculateBasePrice(WC_Abstract_Order $order)
     {
         $total = $order->get_total() - $order->get_total_tax();
-        $total = number_format($total, 2, '.', '');
-
-        return $total;
+        return number_format($total, 2, '.', '');
     }
 
     /**
-     * Output for the order received page.
+     * Action which is called when user arrives to thank you -page.
+     * We use it to verify query parameters from Siru and possibly add
+     * some message on the page about Siru payments.
+     *
      * @todo  what if signature is not valid or updating order fails??
+     * @param $order_id
      */
     public function thankyou_page($order_id)
     {
-
-        $signature = $this->getSignature();
-
-        if(isset($_GET['siru_event']) == true) {
+        if(isset($_GET['siru_event']) === true) {
             require_once WP_PLUGIN_DIR . '/' . self::$base_name . '/includes/class-wc-gateway-sirumobile-response.php';
             $response = new WC_Gateway_Sirumobile_Response($this->getSignature());
 
@@ -303,21 +353,6 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         if ($this->instructions) {
             echo wpautop(wptexturize($this->instructions));
-        }
-    }
-
-    /**
-     * Add content to the WC emails.
-     *
-     * @access public
-     * @param WC_Order $order
-     * @param bool $sent_to_admin
-     * @param bool $plain_text
-     */
-    public function email_instructions($order, $sent_to_admin, $plain_text = false)
-    {
-        if ($this->instructions && !$sent_to_admin && 'siru' === $order->payment_method && $order->is_paid()) {
-            echo wpautop(wptexturize($this->instructions)) . PHP_EOL;
         }
     }
 

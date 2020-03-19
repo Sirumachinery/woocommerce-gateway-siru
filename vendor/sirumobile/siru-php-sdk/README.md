@@ -73,7 +73,7 @@ try {
   exit();
 
 } catch(\Siru\Exception\InvalidResponseException $e) {
-  echo "Unable to contact Payment API."
+  echo "Unable to contact Payment API.";
 
 } catch(\Siru\Exception\ApiException $e) {
   echo "API reported following errors:<br />";

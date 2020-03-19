@@ -1,5 +1,13 @@
 {
+    "name": "sirumobile/woocommerce-gateway-siru",
+    "authors": [
+        {
+            "name": "Siru Mobile",
+            "email": "dev@sirumobile.com",
+            "role": "Developer"
+        }
+    ],
     "require": {
-        "sirumobile/siru-php-sdk": "v0.1"
+        "sirumobile/siru-php-sdk": "0.1.3"
     }
 }
