@@ -269,6 +269,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
             $url = wc_get_checkout_url();
             $notifyUrl = WC()->api_request_url('WC_Gateway_Sirumobile');
+            $cancelUrl = $order->get_cancel_order_url_raw();
 
             $purchaseCountry = esc_attr( $this->get_option( 'purchase_country', 'FI' ) );
             $taxClass = (int)esc_attr( $this->get_option( 'tax_class' ) );
@@ -282,8 +283,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 ->set('purchaseCountry', $purchaseCountry)
                 ->set('basePrice', $basePrice)
                 ->set('redirectAfterSuccess',  $this->get_return_url( $order ))
-                ->set('redirectAfterFailure', $url)
-                ->set('redirectAfterCancel', $url)
+                ->set('redirectAfterFailure', $cancelUrl)
+                ->set('redirectAfterCancel', $cancelUrl)
                 ->set('notifyAfterSuccess', $notifyUrl)
                 ->set('notifyAfterFailure', $notifyUrl)
                 ->set('notifyAfterCancel', $notifyUrl)

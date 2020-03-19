@@ -66,6 +66,10 @@ class WC_Gateway_Sirumobile_Response
         // Notification was sent by Siru Mobile and is authentic
         try {
             $order = wc_get_order($order_id);
+            if ($order === false) {
+                WC_Gateway_Sirumobile::log(sprintf('Received %s %s for non-existing order %s.', $event, $from, $order_id), 'error');
+                return true;
+            }
 
             WC_Gateway_Sirumobile::log(sprintf('Received %s %s for order %s (%s).', $event, $from, $order->get_id(), $order->get_status()));
             if ($order->has_status( array('processing', 'completed') )) {
