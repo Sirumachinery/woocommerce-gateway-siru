@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Siru Mobile
  * Plugin URI: https://github.com/Sirumachinery/woocommerce-gateway-siru
- * Description: Siru Mobile Payment
+ * Description: Siru Mobile payment gateway extension for Woocommerce.
  * Version: 0.2.0
  * Author: Siru Mobile
  * Author URI: https://sirumobile.com

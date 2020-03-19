@@ -1,5 +1,10 @@
 <?php
 
+// Exit if accessed directly
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 /**
  * Takes Siru data that was passed to redirectAfter* or notifyAfter* URL and updates order accordingly.
  */

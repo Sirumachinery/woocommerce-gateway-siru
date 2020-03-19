@@ -36,6 +36,11 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     private $instructions = '';
 
     /**
+     * @var array
+     */
+    public $countries = array('FI');
+
+    /**
      * Plugin directory name.
      * @var string
      */
@@ -106,15 +111,41 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     public function is_available()
     {
-        if(parent::is_available() == false) {
+        if(parent::is_available() === false) {
+            self::log('Siru payment gateway is not enabled or cart total exceeds payment maximum amount. Hiding payment method from checkout.', 'debug');
             return false;
         }
 
         if ($this->needs_setup() === true) {
+            self::log('Siru payment gateway is not yet configured. Hiding payment method from checkout.', 'debug');
             return false;
         }
 
-        return $this->isIpAllowed();
+        if ($this->doesCartContainMultipleTaxClasses() === true) {
+            self::log('It looks like cart contains multiple tax percentages. Hiding payment method from checkout.', 'debug');
+            return false;
+        }
+
+        if ($this->isIpAllowed() === false) {
+            self::log('User is not currently using mobile internet connection. Hiding payment method from checkout.', 'debug');
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if cart items, fees or shipping contain multiple tax classes.
+     * Siru payment gateway supports only one tax class per payment.
+     *
+     * @return bool
+     */
+    private function doesCartContainMultipleTaxClasses()
+    {
+        $cart = WC()->cart;
+        if ($cart instanceof WC_Cart) {
+            return (count($cart->get_taxes()) > 1);
+        }
+        return false;
     }
 
     /**
@@ -325,17 +356,6 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         }
     }
 
-    /**
-     * Unused for now. This could be used to add some message regarding siru payment method to emails.
-     * @see WC_Gateway_BACS::email_instructions()
-     */
-/*    public function email_instructions( $order, $sent_to_admin, $plain_text = false )
-    {
-        if ($this->instructions && !$sent_to_admin && 'siru' === $order->get_payment_method() && $order->is_paid()) {
-            echo wpautop(wptexturize($this->instructions)) . PHP_EOL;
-        }
-    }
-*/
     /**
      * Creates instance of \Siru\Signature using merchant id and secret from settings.
      * @return \Siru\Signature
