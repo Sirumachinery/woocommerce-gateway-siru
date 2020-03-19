@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name: Siru Mobile
+ * Plugin Name: Siru Mobile payment gateway
  * Plugin URI: https://github.com/Sirumachinery/woocommerce-gateway-siru
- * Description: Siru Mobile payment gateway extension for Woocommerce.
+ * Description: Woocommerce extension to accept payments using Direct Carrier Billing in Finland.
  * Version: 1.0.0
  * Author: Siru Mobile
  * Author URI: https://sirumobile.com
  * License: MIT
- * Text Domain: siru-mobile
+ * Text Domain: woocommerce-gateway-siru
  * WC requires at least: 3.0.0
  * WC tested up to: 4.0.0
  *
@@ -71,7 +71,7 @@ function wc_gateway_sirumobile_settings_link($links, $file) {
     $this_plugin = plugin_basename( __FILE__ );
 
     if ($file == $this_plugin){
-        $settings_link = '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=siru') . '">'.__("Settings", "woocommerce").'</a>';
+        $settings_link = '<a href="' . admin_url('admin.php?page=wc-settings&tab=checkout&section=siru') . '">'.__("Settings").'</a>';
         array_unshift($links, $settings_link);
     }
     return $links;
@@ -84,7 +84,7 @@ add_action('plugins_loaded', 'wc_gateway_sirumobile_load_language', 12);
 function wc_gateway_sirumobile_load_language() {
     $plugin_base = basename( dirname( __FILE__ ) );
     $path = $plugin_base . '/languages';
-    load_plugin_textdomain('siru-mobile', false, $path);
+    load_plugin_textdomain('woocommerce-gateway-siru', false, $path);
 }
 
 /**
@@ -97,7 +97,7 @@ function wc_gateway_sirumobile_deactivate() {
 register_deactivation_hook( __FILE__, 'wc_gateway_sirumobile_deactivate' );
 
 /**
- * Do some cleanups during plugin deactivation.
+ * Do some cleanups during plugin uninstall.
  */
 function wc_gateway_sirumobile_uninstall() {
     delete_option('woocommerce_siru_settings');

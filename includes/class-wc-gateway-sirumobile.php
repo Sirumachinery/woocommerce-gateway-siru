@@ -57,7 +57,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
         $this->id = 'siru';
         $this->method_title = 'Siru Mobile';
-        $this->method_description = __('Enable payments by mobile phone. A new transaction is created using Siru Mobile payment gateway where user is redirected to confirm payment. Payments are charged in users mobile phone bill. Mobile payment is only available in Finland when using mobile internet connection.', 'siru-mobile');
+        $this->method_description = __('Accept payments using Siru Mobile Direct Carrier Billing in Finland. Mobile payment is only possible when using mobile internet connection.', 'woocommerce-gateway-siru');
 
         $this->icon = apply_filters( 'woocommerce_sirumobile_icon', plugins_url(self::$base_name) . '/assets/sirumobile-logo.png' );
         $this->has_fields = false;
@@ -67,14 +67,14 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         $this->max_amount = number_format((float) $this->get_option('maximum_payment'), 2);
 
         if (empty($_GET['siru_event']) || $_GET['siru_event'] != 'success') {
-            $this->order_button_text = __('Continue to payment', 'siru-mobile');
+            $this->order_button_text = __('Continue to payment', 'woocommerce-gateway-siru');
         }
 
         $this->init_form_fields();
         $this->init_settings();
 
         $this->title = $this->get_option('title', __('Siru Mobile'));
-        $this->description = $this->get_option('description', __('Pay using your mobile phone.', 'siru-mobile'));
+        $this->description = $this->get_option('description', __('Pay using your mobile phone.', 'woocommerce-gateway-siru'));
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ));
 
@@ -176,7 +176,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             ?>
             <div class="inline error">
                 <p>
-                    <strong><?php esc_html_e( 'Gateway disabled', 'woocommerce' ); ?></strong>: <?php esc_html_e( 'Siru mobile payments are not available in your store currency.', 'siru-mobile' ); ?>
+                    <strong><?php esc_html_e( 'Gateway disabled', 'woocommerce' ); ?></strong>: <?php esc_html_e( 'Siru mobile payments are not available in your store currency.', 'woocommerce-gateway-siru' ); ?>
                 </p>
             </div>
             <?php
@@ -299,7 +299,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
 
             // Store Siru UUID to order
             add_post_meta($order_id, '_siru_uuid', $transaction['uuid']);
-            $order->add_order_note(sprintf(__('New Siru Mobile transaction %s', 'siru-mobile'), $transaction['uuid']));
+            /* translators: %s is unique identifier for the payment from payment gateway */
+            $order->add_order_note(sprintf(__('New Siru Mobile transaction %s', 'woocommerce-gateway-siru'), $transaction['uuid']));
 
             self::log(sprintf('Created new pending payment for order %s. UUID %s.', $order_id, $transaction['uuid']));
 
