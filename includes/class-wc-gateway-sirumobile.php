@@ -6,11 +6,11 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Gateway class for Siru Mobile payments.
+ * Payment gateway class for Siru Mobile payments.
  * 
  * @class       WC_Gateway_Sirumobile
  * @extends     WC_Payment_Gateway
- * @version     0.2.0
+ * @version     1.0.0
  * @package     SiruMobile
  * @author      Siru Mobile
  */
