@@ -53,8 +53,6 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
     {
         self::$base_name = basename(dirname(dirname( __FILE__ )));
 
-        require_once(WP_PLUGIN_DIR . '/' . self::$base_name . '/vendor/autoload.php');
-
         $this->id = 'siru';
         $this->method_title = 'Siru Mobile';
         $this->method_description = __('Accept payments using Siru Mobile Direct Carrier Billing in Finland. Mobile payment is only possible when using mobile internet connection.', 'woocommerce-gateway-siru');
@@ -364,6 +362,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
      */
     private function getSignature()
     {
+        $this->includeAutoLoader();
         $merchantId = esc_attr( $this->get_option( 'merchant_id' ) );
         $secret = esc_attr( $this->get_option( 'merchant_secret' ) );
 
@@ -386,6 +385,18 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         }
 
         return $api;
+    }
+
+    /**
+     * This plugin bundles required SDK and Guzzle but we should only include autoloader
+     * if the current autoloader can not find required classes.
+     */
+    private function includeAutoLoader()
+    {
+        if (class_exists('\Siru\Signature') === false) {
+            self::log('Using bundled autoloader.', 'debug');
+            require_once(WP_PLUGIN_DIR . '/' . self::$base_name . '/vendor/autoload.php');
+        }
     }
 
 }
