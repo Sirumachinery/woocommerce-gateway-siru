@@ -7,7 +7,7 @@
             "role": "Developer"
         }
     ],
-    "type": "wordpress-dropin",
+    "type": "wordpress-plugin",
     "require": {
         "composer/installers": "~1.0",
         "sirumobile/siru-php-sdk": "0.1.3"
