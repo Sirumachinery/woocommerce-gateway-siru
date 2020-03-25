@@ -8,7 +8,8 @@ use Siru\Exception\InvalidResponseException;
  * Siru Price calculation API methods.
  * Can be used to calculate final call price in variant1 payments if needed.
  */
-class Price extends AbstractAPI {
+class Price extends AbstractAPI
+{
     
     /**
      * Returns actual price that will be charged from the end user.
@@ -22,9 +23,8 @@ class Price extends AbstractAPI {
      * @return string
      * @throws InvalidResponseException
      * @throws ApiException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function calculatePrice($purchaseCountry, $basePrice, $submerchantReference = null, $taxClass = null, $variant = 'variant1', $merchantId = null)
+    public function calculatePrice(string $purchaseCountry, string $basePrice, ?string $submerchantReference = null, $taxClass = null, string $variant = 'variant1', $merchantId = null) : string
     {
         $fields = array_filter([
             'purchaseCountry' => $purchaseCountry,
@@ -35,7 +35,7 @@ class Price extends AbstractAPI {
             'merchantId' => is_numeric($merchantId) ? $merchantId : $this->signature->getMerchantId()
         ]);
 
-        list($httpStatus, $body) = $this->send('/payment/price.json', 'GET', $fields);
+        list($httpStatus, $body) = $this->transport->request($fields, '/payment/price.json');
 
         $json = $this->parseJson($body);
 
@@ -46,7 +46,7 @@ class Price extends AbstractAPI {
         return $json['finalCallPrice'];
     }
 
-    private function createException($httpCode, $json, $body)
+    private function createException($httpCode, $json, $body) : ApiException
     {
         if(isset($json['error']) && is_string($json['error'])) {
             $message = $json['error'];

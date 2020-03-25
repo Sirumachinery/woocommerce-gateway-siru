@@ -1,10 +1,11 @@
 <?php
 namespace Siru\Tests;
 
-use GuzzleHttp\ClientInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Siru\API;
 use Siru\Signature;
+use Siru\Transport\TransportInterface;
 
 class APITest extends TestCase
 {
@@ -19,10 +20,16 @@ class APITest extends TestCase
      */
     private $api;
 
-    public function setUp()
+    /**
+     * @var TransportInterface|MockObject
+     */
+    private $transport;
+
+    public function setUp() : void
     {
         $this->signature = new Signature(1, 'xooxer');
-        $this->api = new API($this->signature);
+        $this->transport = $this->createMock(TransportInterface::class);
+        $this->api = new API($this->signature, $this->transport);
     }
 
     /**
@@ -38,14 +45,25 @@ class APITest extends TestCase
      */
     public function endPointIsSetCorrectly()
     {
-        $this->api->useProductionEndpoint();
-        $this->assertEquals(API::ENDPOINT_PRODUCTION, $this->api->getEndpointUrl(), 'Endpoint did not change as expected.');
+        $transport = $this->createMock(TransportInterface::class);
 
-        $this->api->useStagingEndpoint();
-        $this->assertEquals(API::ENDPOINT_STAGING, $this->api->getEndpointUrl(), 'Endpoint did not change as expected.');
+        $transport
+            ->expects($this->exactly(3))
+            ->method('setBaseUrl')
+            ->withConsecutive(
+                [API::ENDPOINT_STAGING],
+                [API::ENDPOINT_PRODUCTION],
+                ['https://lussu.tussi']
+            );
 
-        $this->api->setEndpointUrl('https://siru.tunk.io');
-        $this->assertEquals('https://siru.tunk.io', $this->api->getEndpointUrl(), 'Endpoint did not change as expected.');
+        $api = new API($this->signature, $transport);
+        $this->assertEquals(API::ENDPOINT_STAGING, $api->getEndpointUrl(), 'Endpoint should be staging by default.');
+
+        $api->useProductionEndpoint();
+        $this->assertEquals(API::ENDPOINT_PRODUCTION, $api->getEndpointUrl(), 'Endpoint did not change as expected.');
+
+        $api->setEndpointUrl('https://lussu.tussi');
+        $this->assertEquals('https://lussu.tussi', $api->getEndpointUrl(), 'Endpoint did not change as expected.');
     }
 
     /**
@@ -86,34 +104,6 @@ class APITest extends TestCase
     /**
      * @test
      */
-    public function createsDefaultGuzzleClient()
-    {
-        $url = 'https://siru.tunk.io';
-
-        $this->api->setEndpointUrl($url);
-        $client = $this->api->getGuzzleClient();
-
-        $this->assertInstanceOf(ClientInterface::class, $client);
-
-        $config = self::getProperty($client, 'config');
-        $this->assertArrayHasKey('base_uri', $config);
-        $this->assertEquals($url, $config['base_uri']);
-    }
-
-    /**
-     * @test
-     */
-    public function canOverrideGuzzleClient()
-    {
-        $mock = $this->createMock(ClientInterface::class);
-        $this->api->setGuzzleClient($mock);
-
-        $this->assertSame($mock, $this->api->getGuzzleClient());
-    }
-
-    /**
-     * @test
-     */
     public function returnsExpectedApiClasses()
     {
         $this->assertInstanceOf(API\Payment::class, $this->api->getPaymentApi());
@@ -122,24 +112,6 @@ class APITest extends TestCase
         $this->assertInstanceOf(API\OperationalStatus::class, $this->api->getOperationalStatusApi());
         $this->assertInstanceOf(API\Price::class, $this->api->getPriceApi());
         $this->assertInstanceOf(API\Kyc::class, $this->api->getKycApi());
-    }
-
-    /**
-     * Retrieves the value of the property, overcoming visibility problems.
-     *
-     * @param mixed $object
-     * @param string $propertyName A property name
-     * @return mixed
-     * @throws \ReflectionException
-     */
-    public static function getProperty($object, $propertyName)
-    {
-        $cls = new \ReflectionClass($object);
-        $prop = $cls->getProperty($propertyName);
-        $prop->setAccessible(true);
-        $value = $prop->getValue($object);
-        $prop->setAccessible(false);
-        return $value;
     }
 
 }

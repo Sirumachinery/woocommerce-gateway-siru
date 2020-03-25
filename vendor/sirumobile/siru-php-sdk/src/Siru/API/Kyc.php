@@ -7,7 +7,8 @@ use Siru\Exception\InvalidResponseException;
 /**
  * Siru KYC API methods.
  */
-class Kyc extends AbstractAPI {
+class Kyc extends AbstractAPI
+{
     
     /**
      * Lookup end-user KYC report by purchase UUID.
@@ -28,13 +29,12 @@ class Kyc extends AbstractAPI {
      * @return array        KYC data as an array
      * @throws InvalidResponseException
      * @throws ApiException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function findKycByUuid($uuid)
+    public function findKycByUuid(string $uuid) : array
     {
         $fields = $this->signature->signMessage([ 'uuid' => $uuid ]);
 
-        list($httpStatus, $body) = $this->send('/payment/kyc', 'GET', $fields);
+        list($httpStatus, $body) = $this->transport->request($fields, '/payment/kyc');
 
         return $this->parseResponse($httpStatus, $body);
     }
@@ -48,7 +48,7 @@ class Kyc extends AbstractAPI {
      * @throws InvalidResponseException
      * @throws ApiException
      */
-    private function parseResponse($httpStatus, $body)
+    private function parseResponse($httpStatus, string $body) : array
     {
         $json = $this->parseJson($body);
 
@@ -67,7 +67,7 @@ class Kyc extends AbstractAPI {
      * @param  string         $body
      * @return ApiException
      */
-    private function createException($httpStatus, $json, $body)
+    private function createException($httpStatus, $json, $body) : ApiException
     {
         if(isset($json['error']['message'])) {
             $message = $json['error']['message'];

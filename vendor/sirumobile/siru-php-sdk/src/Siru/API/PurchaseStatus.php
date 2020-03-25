@@ -9,7 +9,8 @@ use Siru\Exception\InvalidResponseException;
 /**
  * Siru purchase status API methods.
  */
-class PurchaseStatus extends AbstractAPI {
+class PurchaseStatus extends AbstractAPI
+{
     
     /**
      * Find a single purchase by purchase UUID that you received from Payment API.
@@ -37,13 +38,12 @@ class PurchaseStatus extends AbstractAPI {
      * @return array        Single purchase details as an array
      * @throws InvalidResponseException
      * @throws ApiException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function findPurchaseByUuid($uuid)
+    public function findPurchaseByUuid(string $uuid) : array
     {
         $fields = $this->signature->signMessage([ 'uuid' => $uuid ]);
 
-        list($httpStatus, $body) = $this->send('/payment/byUuid.json', 'GET', $fields);
+        list($httpStatus, $body) = $this->transport->request($fields, '/payment/byUuid.json');
 
         return $this->parseResponse($httpStatus, $body);
     }
@@ -77,16 +77,15 @@ class PurchaseStatus extends AbstractAPI {
      * @return array
      * @throws InvalidResponseException
      * @throws ApiException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function findPurchasesByReference($purchaseReference, $submerchantReference = null)
+    public function findPurchasesByReference(string $purchaseReference, ?string $submerchantReference = null) : array
     {
         $fields = $this->signature->signMessage([
             'submerchantReference' => $submerchantReference,
             'purchaseReference' => $purchaseReference
         ]);
 
-        list($httpStatus, $body) = $this->send('/payment/byPurchaseReference.json', 'GET', $fields);
+        list($httpStatus, $body) = $this->transport->request($fields, '/payment/byPurchaseReference.json');
 
         $json = $this->parseResponse($httpStatus, $body);
         return $json['purchases'];
@@ -122,9 +121,8 @@ class PurchaseStatus extends AbstractAPI {
      * @return array
      * @throws InvalidResponseException
      * @throws ApiException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function findPurchasesByDateRange(DateTime $from, DateTime $to)
+    public function findPurchasesByDateRange(DateTime $from, DateTime $to) : array
     {
         $searchFrom = clone $from;
         $searchTo = clone $to;
@@ -137,7 +135,7 @@ class PurchaseStatus extends AbstractAPI {
             'to' => $searchTo->format($dateFormat)
         ]);
 
-        list($httpStatus, $body) = $this->send('/payment/byDate.json', 'GET', $fields);
+        list($httpStatus, $body) = $this->transport->request($fields, '/payment/byDate.json');
 
         $json = $this->parseResponse($httpStatus, $body);
         return $json['purchases'];
@@ -152,7 +150,7 @@ class PurchaseStatus extends AbstractAPI {
      * @throws InvalidResponseException
      * @throws ApiException
      */
-    private function parseResponse($httpStatus, $body)
+    private function parseResponse($httpStatus, string $body) : array
     {
         $json = $this->parseJson($body);
 

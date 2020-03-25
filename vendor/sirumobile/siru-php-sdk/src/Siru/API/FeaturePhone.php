@@ -7,20 +7,20 @@ use Siru\Exception\InvalidResponseException;
 /**
  * API for checking if given IP-address is allowed to use variant2 mobile payments.
  */
-class FeaturePhone extends AbstractAPI {
+class FeaturePhone extends AbstractAPI
+{
 
     /**
      * @param  string  $ip IPv4 address
-     * @return boolean     True if variant2 payments are possible from this IP-address
+     * @return bool        True if variant2 payments are possible from this IP-address
      * @throws InvalidResponseException
      * @throws ApiException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function isFeaturePhoneIP($ip)
+    public function isFeaturePhoneIP(string $ip) : bool
     {
         $signedFields = $this->signature->signMessage([ 'ip' => $ip ]);
 
-        list($httpStatus, $body) = $this->send('/payment/ip/feature-check', 'GET', $signedFields);
+        list($httpStatus, $body) = $this->transport->request($signedFields, '/payment/ip/feature-check');
 
         // Validate response
         $json = $this->parseJson($body);
@@ -32,7 +32,7 @@ class FeaturePhone extends AbstractAPI {
         return $json['ipPaymentsEnabled'] == true;
     }
 
-    private function createException($httpCode, $json, $body)
+    private function createException($httpCode, $json, $body) : ApiException
     {
         if(isset($json['error']['message'])) {
             $message = $json['error']['message'];
