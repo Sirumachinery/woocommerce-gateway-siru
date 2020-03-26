@@ -1,4 +1,5 @@
 <?php
+
 namespace Siru;
 
 /**
@@ -7,7 +8,8 @@ namespace Siru;
  * You can use this class as standalone to calculate signature for your own code
  * or with Siru\API class which can do all the heavy lifting for you.
  */
-class Signature {
+class Signature
+{
 
     const SORT_FIELDS = 1;
     const FILTER_EMPTY = 2;
@@ -31,7 +33,7 @@ class Signature {
      * @param int    $merchantId     Your merchant id provided by Siru Mobile
      * @param string $merchantSecret Your merchant secret provided by Siru Mobile
      */
-    public function __construct($merchantId, $merchantSecret)
+    public function __construct($merchantId, string $merchantSecret)
     {
         $this->merchantId = $merchantId;
         $this->merchantSecret = $merchantSecret;
@@ -57,7 +59,7 @@ class Signature {
      * @param  int    $flags        Optional bit SORT_FIELDS, FILTER_EMPTY or combination of both
      * @return array                Array of field/value pairs you can send to Siru API
      */
-    public function signMessage(array $fields, array $signedFields = [], $flags = 0)
+    public function signMessage(array $fields, array $signedFields = [], int $flags = 0) : array
     {
         return array_merge([
             'merchantId' => $this->merchantId,
@@ -75,11 +77,11 @@ class Signature {
      * @param  int    $flags        Optional SORT_FIELDS, FILTER_EMPTY or combination of both
      * @return string
      */
-    public function createMessageSignature(array $fields, array $signedFields = [], $flags = 0)
+    public function createMessageSignature(array $fields, array $signedFields = [], int $flags = 0) : string
     {
         $fields = array_merge(['merchantId' => $this->merchantId], $fields);
 
-        if(empty($signedFields) == false) {
+        if(empty($signedFields) === false) {
             $fields = $this->extractSelectFields($fields, $signedFields);
         }
 
@@ -104,7 +106,7 @@ class Signature {
      * @param  array $signedFields
      * @return array
      */
-    private function extractSelectFields($fields, $signedFields)
+    private function extractSelectFields(array $fields, array $signedFields) : array
     {
         $newFields = [];
         foreach($signedFields as $field) {
@@ -123,7 +125,7 @@ class Signature {
      * @param  array  $fields
      * @return string
      */
-    private function calculateHash(array $fields)
+    private function calculateHash(array $fields) : string
     {
         return hash_hmac("sha512", implode(';', $fields), $this->merchantSecret);
     }
@@ -136,9 +138,9 @@ class Signature {
      * Remember to convert JSON object to array before passing to this method.
      * 
      * @param  array   $fields Response fields
-     * @return boolean         True if signature is valid, otherwise false
+     * @return bool            True if signature is valid, otherwise false
      */
-    public function isNotificationAuthentic(array $fields)
+    public function isNotificationAuthentic(array $fields) : bool
     {
         if(isset($fields['siru_signature']) === false) {
             return false;

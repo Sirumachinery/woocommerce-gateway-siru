@@ -8,13 +8,13 @@ The SDK is available at [Packagist](https://packagist.org) and it is recommended
 
 You can include SDK by executing command:
 ```sh
-$ composer require sirumobile/siru-php-sdk
+$ composer require sirumobile/siru-php-sdk:^1.0
 ```
 or by adding the following lines to your composer.json file:
 ```json
 {
     "require": {
-        "sirumobile/siru-php-sdk": "dev-master"
+        "sirumobile/siru-php-sdk": "^1.0"
     }
 }
 ```
@@ -72,11 +72,11 @@ try {
   header('location: ' . $transaction['redirect']);
   exit();
 
-} catch(\Siru\Exception\InvalidResponseException $e) {
-  echo "Unable to contact Payment API.";
+} catch(\Siru\Exception\TransportException $e) {
+  echo "Unable to contact Payment API. Error was: " . $e->getMessage();
 
 } catch(\Siru\Exception\ApiException $e) {
-  echo "API reported following errors:<br />";
+  echo "API request failed with error code " . $e->getCode() . ": " . $e->getMessage();
   foreach($e->getErrorStack() as $error) {
     echo $error . "<br />";
   }

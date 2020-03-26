@@ -1,27 +1,28 @@
 <?php
+
 namespace Siru;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
 use Siru\API\FeaturePhone;
 use Siru\API\Kyc;
 use Siru\API\OperationalStatus;
 use Siru\API\Payment;
 use Siru\API\Price;
 use Siru\API\PurchaseStatus;
+use Siru\Transport\TransportInterface;
 
 /**
  * This class is used to create instances of different API objects which in turn are used to call different API methods.
  */
-class API {
+class API
+{
 
     const ENDPOINT_STAGING = 'https://staging.sirumobile.com';
     const ENDPOINT_PRODUCTION = 'https://payment.sirumobile.com';
 
     /**
-     * @var ClientInterface|null
+     * @var TransportInterface
      */
-    private $guzzleClient;
+    private $transport;
     
     /**
      * Signature creator.
@@ -43,10 +44,12 @@ class API {
 
     /**
      * @param Signature $signature
+     * @param TransportInterface|null $transport
      */
-    public function __construct(Signature $signature)
+    public function __construct(Signature $signature, TransportInterface $transport = null)
     {
         $this->signature = $signature;
+        $this->transport = $transport !== null ? $transport : TransportFactory::create();
         $this->useStagingEndpoint();
         $this->setDefaults('merchantId', $signature->getMerchantId());
     }
@@ -56,7 +59,7 @@ class API {
      * 
      * @return API
      */
-    public function useStagingEndpoint()
+    public function useStagingEndpoint() : self
     {
         return $this->setEndpointUrl(self::ENDPOINT_STAGING);
     }
@@ -66,19 +69,32 @@ class API {
      * 
      * @return API
      */
-    public function useProductionEndpoint()
+    public function useProductionEndpoint() : self
     {
         return $this->setEndpointUrl(self::ENDPOINT_PRODUCTION);
     }
 
-    public function setEndpointUrl($url)
+    /**
+     * Set payment gateway base URL.
+     *
+     * @param string $url
+     * @return API
+     * @internal
+     */
+    public function setEndpointUrl(string $url) : self
     {
         $this->endPoint = $url;
+        $this->transport->setBaseUrl($url);
 
         return $this;
     }
 
-    public function getEndpointUrl()
+    /**
+     * Get payment gateway base URL.
+     *
+     * @return string
+     */
+    public function getEndpointUrl() : string
     {
         return $this->endPoint;
     }
@@ -94,7 +110,7 @@ class API {
      * @param   string|null  $value      Field value when $keyOrArray is a string
      * @return  API
      */
-    public function setDefaults($keyOrArray, $value = null)
+    public function setDefaults($keyOrArray, ?string $value = null) : self
     {
         if(is_array($keyOrArray) || is_object($keyOrArray)) {
 
@@ -119,7 +135,7 @@ class API {
      * @param  string|null $key Field name or null to return all defaults as an array
      * @return string|null|array
      */
-    public function getDefaults($key = null)
+    public function getDefaults(?string $key = null)
     {
         if($key) {
             return array_key_exists($key, $this->defaults) ? $this->defaults[$key] : null;
@@ -129,25 +145,22 @@ class API {
     }
 
     /**
-     * @return Client
+     * @return TransportInterface
      */
-    public function getGuzzleClient()
+    protected function getTransport() : TransportInterface
     {
-        if ($this->guzzleClient === null) {
-            $this->guzzleClient = new Client(['base_uri' => $this->endPoint, 'verify' => false]);
-        }
-        return $this->guzzleClient;
+        return $this->transport;
     }
 
     /**
-     * Sets guzzle client that will be used for API requests.
-     * Note that setting the client here will override selected endpoint URL.
-     *
-     * @param ClientInterface $client
+     * @param TransportInterface $transport
+     * @return API
      */
-    public function setGuzzleClient(ClientInterface $client)
+    protected function setTransport(TransportInterface $transport) : self
     {
-        $this->guzzleClient = $client;
+        $this->transport = $transport;
+        $this->transport->setBaseUrl($this->endPoint);
+        return $this;
     }
 
     /**
@@ -156,9 +169,9 @@ class API {
      * 
      * @return Payment
      */
-    public function getPaymentApi()
+    public function getPaymentApi() : Payment
     {
-        $api = new Payment($this->signature, $this->getGuzzleClient());
+        $api = new Payment($this->signature, $this->transport);
 
         array_walk($this->defaults, function($value, $key) use ($api) {
             $api->set($key, $value);
@@ -172,11 +185,9 @@ class API {
      *
      * @return PurchaseStatus
      */
-    public function getPurchaseStatusApi()
+    public function getPurchaseStatusApi() : PurchaseStatus
     {
-        $api = new PurchaseStatus($this->signature, $this->getGuzzleClient());
-
-        return $api;
+        return new PurchaseStatus($this->signature, $this->transport);
     }
 
     /**
@@ -184,11 +195,9 @@ class API {
      *
      * @return Kyc
      */
-    public function getKycApi()
+    public function getKycApi() : Kyc
     {
-        $api = new Kyc($this->signature, $this->getGuzzleClient());
-
-        return $api;
+        return new Kyc($this->signature, $this->transport);
     }
 
     /**
@@ -196,11 +205,9 @@ class API {
      * 
      * @return Price
      */
-    public function getPriceApi()
+    public function getPriceApi() : Price
     {
-        $api = new Price($this->signature, $this->getGuzzleClient());
-
-        return $api;
+        return new Price($this->signature, $this->transport);
     }
 
     /**
@@ -208,11 +215,9 @@ class API {
      * 
      * @return FeaturePhone
      */
-    public function getFeaturePhoneApi()
+    public function getFeaturePhoneApi() : FeaturePhone
     {
-        $api = new FeaturePhone($this->signature, $this->getGuzzleClient());
-
-        return $api;
+        return new FeaturePhone($this->signature, $this->transport);
     }
 
     /**
@@ -220,11 +225,9 @@ class API {
      * 
      * @return OperationalStatus
      */
-    public function getOperationalStatusApi()
+    public function getOperationalStatusApi() : OperationalStatus
     {
-        $api = new OperationalStatus($this->signature, $this->getGuzzleClient());
-
-        return $api;
+        return new OperationalStatus($this->signature, $this->transport);
     }
 
 }

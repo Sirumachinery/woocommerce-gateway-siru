@@ -1,17 +1,15 @@
 <?php
 namespace Siru\API;
 
-use GuzzleHttp\ClientInterface;
+use Siru\Exception\ApiException;
 use Siru\Signature;
-use Siru\Exception\InvalidResponseException;
-use GuzzleHttp\Exception\BadResponseException;
+use Siru\Transport\TransportInterface;
 
 /**
  * Base class for each Siru API class.
- *
- * Uses GuzzleHttp client to send requests to Siru API.
  */
-abstract class AbstractAPI {
+abstract class AbstractAPI
+{
     
     /**
      * Signature creator.
@@ -20,55 +18,18 @@ abstract class AbstractAPI {
     protected $signature;
 
     /**
-     * GuzzleHttp client for making requests.
-     * @var ClientInterface
+     * @var TransportInterface
      */
-    private $client;
+    protected $transport;
 
     /**
-     * Signature object and API endpoint address are required.
-     * 
-     * @param Signature          $signature
-     * @param ClientInterface    $client
+     * @param Signature $signature
+     * @param TransportInterface $transport
      */
-    public function __construct(Signature $signature, ClientInterface $client)
+    public function __construct(Signature $signature, TransportInterface $transport)
     {
         $this->signature = $signature;
-        $this->setGuzzleClient($client);
-    }
-
-    public function setGuzzleClient(ClientInterface $client)
-    {
-        $this->client = $client;
-    }
-
-    /**
-     * Sends request to Siru API.
-     * 
-     * @param  string $path   Path that is appended to endpoint address
-     * @param  string $method HTTP method GET or POST
-     * @param  array  $fields Values that are sent to API
-     * @return array          Array where first index is HTTP status and second is response body
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    protected function send($path, $method = 'GET', array $fields = [])
-    {
-        $options = ['verify' => false];
-
-        if($method === 'GET') {
-            $options['query'] = $fields;
-        } elseif(!empty($fields)) {
-            $options['json'] = $fields;
-        }
-
-        // Send request
-        try {
-            $response = $this->client->request($method, $path, $options);
-        } catch(BadResponseException $e) {
-            $response = $e->getResponse();
-        }
-
-        return [$response->getStatusCode(), (string)$response->getBody()];
+        $this->transport = $transport;
     }
 
     /**
@@ -76,19 +37,29 @@ abstract class AbstractAPI {
      * 
      * @param  string $body
      * @return array|false
-     * @throws InvalidResponseException
      */
-    protected function parseJson($body)
+    protected function parseJson(string $body)
     {
-        if(empty($body) == false) {
-            $json = json_decode($body, true);
+        return json_decode($body, true);
+    }
+
+    /**
+     * Creates an exception if error has occurred.
+     *
+     * @param  int|null       $httpStatus
+     * @param  string         $body
+     * @return ApiException
+     */
+    protected function createException(?int $httpStatus, string $body) : ApiException
+    {
+        $json = $this->parseJson($body);
+        if(isset($json['error']['message'])) {
+            $message = $json['error']['message'];
+        } else {
+            $message = 'Unknown error';
         }
 
-        if(empty($json) === true) {
-            throw new InvalidResponseException("Invalid response from API", 0, null, $body);
-        }
-
-        return $json;
+        return new ApiException($message, $httpStatus ?: 0, null, $body);
     }
 
 }

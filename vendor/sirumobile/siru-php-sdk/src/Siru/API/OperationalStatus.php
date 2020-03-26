@@ -1,10 +1,13 @@
 <?php
 namespace Siru\API;
 
+use Siru\Exception\ApiException;
+
 /**
  * Checks Siru API operational status.
  */
-class OperationalStatus extends AbstractAPI {
+class OperationalStatus extends AbstractAPI
+{
     
     /**
      * Sends request to status API and returns HTTP status code.
@@ -14,11 +17,14 @@ class OperationalStatus extends AbstractAPI {
      * 500 There is a problem with Siru Mobile API.
      * 
      * @return int
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function check()
+    public function check() : int
     {
-        list($httpStatus) = $this->send('/status', 'GET');
+        try {
+            list($httpStatus) = $this->transport->request([], '/status');
+        } catch(ApiException $e) {
+            $httpStatus = $e->getCode();
+        }
 
         return (int) $httpStatus;
     }

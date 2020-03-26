@@ -2,7 +2,6 @@
 namespace Siru\API;
 
 use Siru\Signature;
-use Siru\Exception\InvalidResponseException;
 use Siru\Exception\ApiException;
 
 /**
@@ -10,7 +9,8 @@ use Siru\Exception\ApiException;
  * API returns payment UUID and URL where user should be redirected to confirm payment.
  * From there user is redirected back to one of your redirectAfter* URLs.
  */
-class Payment extends AbstractAPI {
+class Payment extends AbstractAPI
+{
 
     /**
      * @var array
@@ -67,7 +67,7 @@ class Payment extends AbstractAPI {
      * @param   mixed  $value Field value
      * @return  Payment
      */
-    public function set($key, $value = null)
+    public function set(string $key, $value = null) : self
     {
         if($value === null) {
             unset($this->fields[$key]);
@@ -84,7 +84,7 @@ class Payment extends AbstractAPI {
      * @param  string $variant Variant name
      * @return array
      */
-    public function getSignatureFieldsForVariant($variant)
+    public function getSignatureFieldsForVariant(string $variant) : array
     {
         $fields = $this->signatureFields;
 
@@ -103,46 +103,24 @@ class Payment extends AbstractAPI {
      * user should be redirected next to make payment.
      * 
      * @return array
-     * @throws InvalidResponseException
      * @throws ApiException
-     * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createPayment()
+    public function createPayment() : array
     {
-
         $signedFields = $this->signature->signMessage(
             $this->fields,
             $this->getSignatureFieldsForVariant($this->fields['variant']),
             Signature::FILTER_EMPTY | Signature::SORT_FIELDS
         );
 
-        list($httpCode, $body) = $this->send('/payment.json', 'POST', $signedFields);
+        list($httpCode, $body) = $this->transport->request($signedFields, '/payment.json', 'POST');
 
-        // Validate response
         $json = $this->parseJson($body);
-        if(isset($json['success']) == false) {
-            throw new InvalidResponseException("Invalid response from API", 0, null, $body);
-        }
-
-        if($json['success'] == false) {
-            throw $this->createErrorException($json, $body);
-        }
 
         return [
             'uuid' => $json['purchase']['uuid'],
             'redirect' => $json['purchase']['redirect']
         ];
-    }
-
-    private function createErrorException(array $json, $body)
-    {
-        if(isset($json['errors'])) {
-            $errorStack = $json['errors'];
-        } else {
-            $errorStack = [];
-        }
-
-        return new ApiException('An error occured while initiating payment.', 0, null, $body, $errorStack);
     }
 
 }

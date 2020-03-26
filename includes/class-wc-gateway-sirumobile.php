@@ -196,6 +196,7 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
         if(isset($cache[$ip])) {
             return $cache[$ip];
         }
+        self::log('Checking from Siru API if payments are available for IP-address.', 'debug');
 
         $api = $this->getSiruAPI();
 
@@ -209,8 +210,8 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
             return $allowed;
 
         } catch (\Exception $e) {
-            self::log(sprintf('ApiException: Unable to verify if %s is allowed to use mobile payments. %s', $ip, $e->getMessage()));
-            return true;
+            self::log(sprintf('Exception: Unable to verify if %s is allowed to use mobile payments. %s (code %s)', $ip, $e->getMessage(), $e->getCode()), 'error');
+            return false;
         }
     }
 
@@ -308,13 +309,11 @@ class WC_Gateway_Sirumobile extends WC_Payment_Gateway
                 'redirect' => $transaction['redirect']
             );
 
-        } catch (\Siru\Exception\InvalidResponseException $e) {
-            self::log('InvalidResponseException: Unable to contact payment API. Check credentials.', 'error');
-       #     wc_add_notice( 'Unable to connect to the payment gateway, please try again.', 'error' );
+        } catch (\Siru\Exception\TransportException $e) {
+            self::log(sprintf('TransportException: Unable to contact payment API. %s', $e->getMessage()), 'error');
 
         } catch (\Siru\Exception\ApiException $e) {
-            self::log('ApiException: Failed to create transaction. ' . implode(" ", $e->getErrorStack()), 'error');
-       #     wc_add_notice( 'An error occured while starting mobile payment, please try again.', 'error' );
+            self::log(sprintf('ApiException: %s (code %s). Errors: %s', $e->getMessage(), $e->getCode(), implode(" ", $e->getErrorStack())), 'error');
         }
 
         return array(
