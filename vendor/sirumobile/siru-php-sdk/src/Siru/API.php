@@ -13,7 +13,7 @@ use Siru\Transport\TransportInterface;
 /**
  * This class is used to create instances of different API objects which in turn are used to call different API methods.
  */
-class API extends LegacyApi
+class API
 {
 
     const ENDPOINT_STAGING = 'https://staging.sirumobile.com';

@@ -1,34 +1,20 @@
 <?php
 namespace Siru\Tests\API;
 
-use PHPUnit\Framework\MockObject\MockObject;
-use PHPUnit\Framework\TestCase;
 use Siru\API\FeaturePhone;
-use Siru\Signature;
-use Siru\Transport\TransportInterface;
+use Siru\Exception\ApiException;
 
-class FeaturePhoneTest extends TestCase
+class FeaturePhoneTest extends AbstractApiTest
 {
-
-    /**
-     * @var Signature
-     */
-    private $signature;
 
     /**
      * @var FeaturePhone
      */
     private $api;
 
-    /**
-     * @var TransportInterface|MockObject
-     */
-    private $transport;
-
     public function setUp()
     {
-        $this->signature = new Signature(1, 'xooxer');
-        $this->transport = $this->createMock(TransportInterface::class);
+        parent::setUp();
         $this->api = new FeaturePhone($this->signature, $this->transport);
     }
 
@@ -78,6 +64,22 @@ class FeaturePhoneTest extends TestCase
             ]);
 
         $this->assertFalse($this->api->isFeaturePhoneIP($ip));
+    }
+
+    /**
+     * @test
+     */
+    public function authenticationFails()
+    {
+        $ip = '1.1.1.1';
+        $this->transport
+            ->expects($this->once())
+            ->method('request')
+            ->willThrowException(ApiException::create(403, '{"error":{"code":403,"message":"Forbidden"}}'));
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionCode(403);
+        $this->api->isFeaturePhoneIP($ip);
     }
 
 }

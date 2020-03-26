@@ -1,6 +1,8 @@
 <?php
 namespace Siru\API;
 
+use Siru\Exception\ApiException;
+
 /**
  * Checks Siru API operational status.
  */
@@ -18,7 +20,11 @@ class OperationalStatus extends AbstractAPI
      */
     public function check() : int
     {
-        list($httpStatus) = $this->transport->request([], '/status');
+        try {
+            list($httpStatus) = $this->transport->request([], '/status');
+        } catch(ApiException $e) {
+            $httpStatus = $e->getCode();
+        }
 
         return (int) $httpStatus;
     }

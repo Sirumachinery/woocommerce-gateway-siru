@@ -1,17 +1,17 @@
 [
     {
         "name": "sirumobile/siru-php-sdk",
-        "version": "dev-release-1.0.0",
-        "version_normalized": "dev-release-1.0.0",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/Sirumachinery/siru-php-sdk.git",
-            "reference": "df049d02c4ee2584b1c7407abdc1af791da7a015"
+            "reference": "51beeeae08035e28e116a6c502bad186379dfc79"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/Sirumachinery/siru-php-sdk/zipball/df049d02c4ee2584b1c7407abdc1af791da7a015",
-            "reference": "df049d02c4ee2584b1c7407abdc1af791da7a015",
+            "url": "https://api.github.com/repos/Sirumachinery/siru-php-sdk/zipball/51beeeae08035e28e116a6c502bad186379dfc79",
+            "reference": "51beeeae08035e28e116a6c502bad186379dfc79",
             "shasum": ""
         },
         "require": {
@@ -24,9 +24,9 @@
         "suggest": {
             "guzzlehttp/guzzle": "^6.1"
         },
-        "time": "2020-03-25T14:33:24+00:00",
+        "time": "2020-03-26T08:10:27+00:00",
         "type": "library",
-        "installation-source": "source",
+        "installation-source": "dist",
         "autoload": {
             "psr-4": {
                 "Siru\\": "src/Siru/"

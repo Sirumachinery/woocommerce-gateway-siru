@@ -4,7 +4,6 @@ namespace Siru\API;
 use DateTime;
 use DateTimeZone;
 use Siru\Exception\ApiException;
-use Siru\Exception\InvalidResponseException;
 
 /**
  * Siru purchase status API methods.
@@ -36,7 +35,6 @@ class PurchaseStatus extends AbstractAPI
      * 
      * @param  string $uuid Uuid received from Payment API
      * @return array        Single purchase details as an array
-     * @throws InvalidResponseException
      * @throws ApiException
      */
     public function findPurchaseByUuid(string $uuid) : array
@@ -45,7 +43,7 @@ class PurchaseStatus extends AbstractAPI
 
         list($httpStatus, $body) = $this->transport->request($fields, '/payment/byUuid.json');
 
-        return $this->parseResponse($httpStatus, $body);
+        return $this->parseJson($body);
     }
 
     /**
@@ -75,7 +73,6 @@ class PurchaseStatus extends AbstractAPI
      * @param  string      $purchaseReference    Purchase reference sent to API
      * @param  string|null $submerchantReference Optional submerchantReference
      * @return array
-     * @throws InvalidResponseException
      * @throws ApiException
      */
     public function findPurchasesByReference(string $purchaseReference, ?string $submerchantReference = null) : array
@@ -87,7 +84,7 @@ class PurchaseStatus extends AbstractAPI
 
         list($httpStatus, $body) = $this->transport->request($fields, '/payment/byPurchaseReference.json');
 
-        $json = $this->parseResponse($httpStatus, $body);
+        $json = $this->parseJson($body);
         return $json['purchases'];
     }
 
@@ -119,7 +116,6 @@ class PurchaseStatus extends AbstractAPI
      * @param  DateTime $from  Lower date limit. Purchases with this datetime or higher will be included in the result.
      * @param  DateTime $to    Upper date limit. Purchases created before this datetime are included in the result.
      * @return array
-     * @throws InvalidResponseException
      * @throws ApiException
      */
     public function findPurchasesByDateRange(DateTime $from, DateTime $to) : array
@@ -137,47 +133,8 @@ class PurchaseStatus extends AbstractAPI
 
         list($httpStatus, $body) = $this->transport->request($fields, '/payment/byDate.json');
 
-        $json = $this->parseResponse($httpStatus, $body);
-        return $json['purchases'];
-    }
-
-    /**
-     * Checks HTTP status code and parses response body to JSON.
-     * 
-     * @param  int    $httpStatus
-     * @param  string $body
-     * @return array
-     * @throws InvalidResponseException
-     * @throws ApiException
-     */
-    private function parseResponse($httpStatus, string $body) : array
-    {
         $json = $this->parseJson($body);
-
-        if($httpStatus <> 200) {
-            throw $this->createException($httpStatus, $json, $body);
-        }
-        
-        return $json;        
-    }
-
-    /**
-     * Creates an exception if error has occured.
-     * 
-     * @param  int            $httpStatus
-     * @param  array          $json
-     * @param  string         $body
-     * @return ApiException
-     */
-    private function createException($httpStatus, $json, $body)
-    {
-        if(isset($json['error']['message'])) {
-            $message = $json['error']['message'];
-        } else {
-            $message = 'Unknown error';
-        }
-
-        return new ApiException($message, 0, null, $body);
+        return $json['purchases'];
     }
 
 }

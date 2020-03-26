@@ -12,7 +12,7 @@ class TransportFactory
     /**
      * @return TransportInterface
      */
-    public static function create()
+    public static function create() : TransportInterface
     {
         if (class_exists('\GuzzleHttp\ClientInterface') === true) {
             return new GuzzleTransport();

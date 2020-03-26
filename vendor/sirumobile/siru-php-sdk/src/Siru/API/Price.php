@@ -2,7 +2,6 @@
 namespace Siru\API;
 
 use Siru\Exception\ApiException;
-use Siru\Exception\InvalidResponseException;
 
 /**
  * Siru Price calculation API methods.
@@ -21,7 +20,6 @@ class Price extends AbstractAPI
      * @param  string      $variant              Variant, usually variant1 which is default
      * @param  int         $merchantId           MerchantId. If empty, merchantId from signature is used
      * @return string
-     * @throws InvalidResponseException
      * @throws ApiException
      */
     public function calculatePrice(string $purchaseCountry, string $basePrice, ?string $submerchantReference = null, $taxClass = null, string $variant = 'variant1', $merchantId = null) : string
@@ -39,22 +37,7 @@ class Price extends AbstractAPI
 
         $json = $this->parseJson($body);
 
-        if($httpStatus <> 200) {
-            throw $this->createException($httpStatus, $json, $body);
-        }
-        
         return $json['finalCallPrice'];
-    }
-
-    private function createException($httpCode, $json, $body) : ApiException
-    {
-        if(isset($json['error']) && is_string($json['error'])) {
-            $message = $json['error'];
-        } else {
-            $message = 'Unknown error';
-        }
-
-        return new ApiException($message, 0, null, $body);
     }
 
 }

@@ -2,6 +2,9 @@
 
 namespace Siru\Transport;
 
+use Siru\Exception\ApiException;
+use Siru\Exception\TransportException;
+
 class WordPressTransport implements TransportInterface
 {
 
@@ -18,6 +21,9 @@ class WordPressTransport implements TransportInterface
         $this->baseUrl = $baseUrl;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function request(array $fields, string $endPoint, string $method = 'GET') : array
     {
 
@@ -25,15 +31,17 @@ class WordPressTransport implements TransportInterface
             $query = http_build_query($fields);
             $url = $this->baseUrl . $endPoint . '?' . $query;
             $response = wp_remote_get($url);
-        } elseif($method === 'POST') {
+        } else {
             $response = wp_remote_post($this->baseUrl . $endPoint, [
                 'body' => wp_json_encode($fields),
                 'headers'     => [
                     'Content-Type' => 'application/json',
                 ]
             ]);
-        } else {
-            return [null, ''];
+        }
+
+        if (is_wp_error($response) === true) {
+            throw new TransportException($response->get_error_message());
         }
 
         /** @var int|string $httpCode Http status code or empty string */
@@ -41,8 +49,16 @@ class WordPressTransport implements TransportInterface
         /** @var string $body */
         $body = wp_remote_retrieve_body($response);
 
+        if (empty($httpCode) === true) {
+            throw new TransportException();
+        }
+
+        if ($httpCode < 200 || $httpCode > 299) {
+            throw ApiException::create($httpCode, $body);
+        }
+
         return [
-            $httpCode ?: null,
+            $httpCode,
             $body
         ];
     }

@@ -2,7 +2,6 @@
 namespace Siru\API;
 
 use Siru\Signature;
-use Siru\Exception\InvalidResponseException;
 use Siru\Exception\ApiException;
 
 /**
@@ -104,7 +103,6 @@ class Payment extends AbstractAPI
      * user should be redirected next to make payment.
      * 
      * @return array
-     * @throws InvalidResponseException
      * @throws ApiException
      */
     public function createPayment() : array
@@ -117,31 +115,12 @@ class Payment extends AbstractAPI
 
         list($httpCode, $body) = $this->transport->request($signedFields, '/payment.json', 'POST');
 
-        // Validate response
         $json = $this->parseJson($body);
-        if(isset($json['success']) == false) {
-            throw new InvalidResponseException("Invalid response from API: " . $body, 0, null, $body);
-        }
-
-        if($json['success'] == false) {
-            throw $this->createErrorException($json, $body);
-        }
 
         return [
             'uuid' => $json['purchase']['uuid'],
             'redirect' => $json['purchase']['redirect']
         ];
-    }
-
-    private function createErrorException(array $json, $body) : ApiException
-    {
-        if(isset($json['errors'])) {
-            $errorStack = $json['errors'];
-        } else {
-            $errorStack = [];
-        }
-
-        return new ApiException('An error occured while initiating payment.', 0, null, $body, $errorStack);
     }
 
 }
